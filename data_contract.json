@@ -1,0 +1,56 @@
+{
+  "target_station": {
+    "iem": "RDU",
+    "icao": "KRDU",
+    "ghcnh": "USW00013722",
+    "wban": "13722"
+  },
+  "timezone": "America/New_York",
+  "cutoff_utc_exclusive": "2026-09-17T04:00:00Z",
+  "target_first_local": "2026-09-17T00:00:00-04:00",
+  "target_last_local": "2026-09-30T23:00:00-04:00",
+  "output_hours": 336,
+  "observation_hour_mapping": "Provisional floor to same clock hour; exact report time retained. Must match instructor target convention before scoring.",
+  "target_units": "Fahrenheit provisionally; deck does not prescribe units.",
+  "primary_candidate": "Aug\u2013Oct, ten complete prior seasons 2016\u20132025 plus Aug1\u2013Sep16 2026",
+  "raw_archive": "2011 local Jan1 through final exclusive cutoff; all months",
+  "source_conflicts": "Retain raw labels and NOAA alternatives; temporary usable-label mask pending source review.",
+  "primary_metric": "MAE",
+  "secondary_metric": "RMSE",
+  "diagnostic_metric": "signed_bias",
+  "metric_units": "degrees Fahrenheit",
+  "development_test_years": [
+    2021,
+    2022,
+    2023
+  ],
+  "confirmation_test_years": [
+    2024,
+    2025
+  ],
+  "history_year_candidates": [
+    5,
+    10
+  ],
+  "month_candidates": [
+    "September",
+    "August\u2013October",
+    "all months"
+  ],
+  "gfs_calibration_run_start": "2026-04-02T18:00Z",
+  "gfs_calibration_run_end": "2026-07-23T18:00Z",
+  "gfs_confirmation_runs": [
+    "2026-08-06T18:00Z",
+    "2026-08-13T18:00Z",
+    "2026-08-20T18:00Z",
+    "2026-08-27T18:00Z"
+  ],
+  "gfs_overlap_excluded_run": "2026-07-30T18:00Z",
+  "models_required_later": [
+    "linear regression",
+    "another fitted model; initial candidate gradient-boosted trees"
+  ],
+  "current_stop": "before EDA",
+  "target_actuals_present": false,
+  "models_fitted": false
+}

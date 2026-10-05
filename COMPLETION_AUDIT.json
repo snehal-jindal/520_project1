@@ -1,0 +1,19 @@
+{
+  "audit_errors": [],
+  "snapshot_files_including_manifest": 97,
+  "checksum_verified_snapshot_files": 96,
+  "figures_png": 24,
+  "figures_svg": 24,
+  "numeric_tables": 31,
+  "executed_notebook_code_cells": 5,
+  "notebook_error_outputs": 0,
+  "contract_test_command": "python -m unittest discover -s tests -v",
+  "known_limits": [
+    "Routine-report target convention and units await instructor confirmation.",
+    "Source disagreements need a fixed policy before model scoring.",
+    "Historical source archives are revised snapshots, not verified historical release snapshots.",
+    "GFS benchmark is calibration-only spring/summer, with overlapping windows.",
+    "Original PowerPoint is not redistributed without specific publication approval.",
+    "Required forecast models, final predictions and student-authored submissions remain."
+  ]
+}

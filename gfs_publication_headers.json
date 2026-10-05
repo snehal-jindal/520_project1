@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260916/18/atmos/gfs.t18z.pgrb2.0p25.f000.idx",
+    "status": 200,
+    "last_modified": "Wed, 16 Sep 2026 21:36:49 GMT",
+    "etag": "\"f200732287a586d41f85b596a604fb25\""
+  },
+  {
+    "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260916/18/atmos/gfs.t18z.pgrb2.0p25.f120.idx",
+    "status": 200,
+    "last_modified": "Wed, 16 Sep 2026 22:10:52 GMT",
+    "etag": "\"5df2c6aef39d449c6df09ad9720008de\""
+  },
+  {
+    "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260916/18/atmos/gfs.t18z.pgrb2.0p25.f240.idx",
+    "status": 200,
+    "last_modified": "Wed, 16 Sep 2026 22:41:10 GMT",
+    "etag": "\"e5d89dd38e05a9d0261af0e42fbdcf8c\""
+  },
+  {
+    "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260916/18/atmos/gfs.t18z.pgrb2.0p25.f345.idx",
+    "status": 200,
+    "last_modified": "Wed, 16 Sep 2026 23:09:01 GMT",
+    "etag": "\"6458a37ad8480a6c75a5b1b15c08a861\""
+  },
+  {
+    "url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20260916/18/atmos/gfs.t18z.pgrb2.0p25.f384.idx",
+    "status": 200,
+    "last_modified": "Wed, 16 Sep 2026 23:17:23 GMT",
+    "etag": "\"dfb640ffa7799b6fc19ff5063aaf0c0a\""
+  }
+]

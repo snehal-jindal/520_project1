@@ -1,0 +1,53 @@
+{
+  "core": {
+    "start_utc": "2011-01-01T05:00:00+00:00",
+    "end_hour_utc": "2021-09-17T03:00:00+00:00",
+    "hours": 93887,
+    "usable": 93712,
+    "missing_or_quarantined": 175,
+    "complete_years": 10,
+    "historical_target_hours": 3360,
+    "historical_target_usable": 3355
+  },
+  "target_distribution": {
+    "0.1": 59.0,
+    "0.5": 70.0,
+    "0.9": 81.0
+  },
+  "descriptive_september_trend": {
+    "n_years": 10,
+    "slope_f_per_decade": 2.7433712857329624,
+    "slope_standard_error_f_per_decade": 2.6866364064055133
+  },
+  "five_vs_ten_mean_abs_hourly_difference_f": 1.9913365642889411,
+  "preorigin_2026": {
+    "hours": 1128,
+    "usable": 1127,
+    "mean_anomaly_f": 3.4547155673863745
+  },
+  "gfs_exploratory_benchmark": {
+    "scored_pairs": 5700.0,
+    "mae_f": 5.689321929824561,
+    "rmse_f": 7.693542222306527,
+    "bias_f": -1.9787347953216374,
+    "origins": 17,
+    "unique_scored_report_times": 3016,
+    "not_project_model_performance": true
+  },
+  "core_archive_agreement": {
+    "paired_reports": 93754,
+    "requires_review": 37,
+    "source_quality_failures": 0,
+    "temperature_disagreements": 37,
+    "whole_celsius_rounding_consistent": 93,
+    "median_absolute_difference_f": 0.04
+  },
+  "scope_guards": {
+    "final_outcomes_accessed": false,
+    "2021_2025_test_outcomes_in_core_eda": false,
+    "august_gfs_confirmation_errors_examined": false,
+    "imputation_used": false,
+    "final_models_fitted": false,
+    "figures": 24
+  }
+}

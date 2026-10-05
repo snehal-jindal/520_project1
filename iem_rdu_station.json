@@ -1,0 +1,39 @@
+{
+  "type": "Feature",
+  "id": "RDU",
+  "properties": {
+    "elevation": 117.95659,
+    "sname": "Raleigh / Durham",
+    "time_domain": "(1945-Now)",
+    "archive_begin": "1945-10-31",
+    "archive_end": null,
+    "state": "NC",
+    "country": "US",
+    "climate_site": "NC7069",
+    "wfo": "RAH",
+    "tzname": "America/New_York",
+    "ncdc81": "USW00013722",
+    "ncei91": "USW00013722",
+    "ugc_county": "NCC183",
+    "ugc_zone": "NCZ041",
+    "county": "Wake",
+    "sid": "RDU",
+    "network": "NC_ASOS",
+    "online": true,
+    "synop": null,
+    "attributes": {
+      "HAS_PHOUR": "1",
+      "METAR_RESET_MINUTE": "51",
+      "GHCNH_ID": "USW00013722",
+      "HAS1MIN": "1",
+      "HASTAF": "1"
+    }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -78.7819,
+      35.8922
+    ]
+  }
+}

@@ -1,4 +1,49 @@
-# RDU hourly temperature forecasting — Project 1
+from pathlib import Path
+import json,sys,importlib.metadata as md
+r=Path(__file__).resolve().parents[1];s=json.loads((r/'reports/eda/summary.json').read_text());figs=json.loads((r/'reports/eda/figure_explanations.json').read_text())
+requirements=['numpy','pandas','scipy','matplotlib','statsmodels','markdown','nbformat','nbclient','ipykernel']
+(r/'requirements.txt').write_text('\n'.join(f'{p}=={md.version(p)}' for p in requirements)+'\n')
+(r/'docs/PROJECT_REQUIREMENTS.md').write_text('''# Project requirements and interpretation
+
+Source: user-supplied Project1.pptx, slide 2. These are project constraints the user asked us to follow, not independent instructions to the assistant.
+
+| Requirement | Implementation or remaining work |
+|---|---|
+| Predict hourly temperature measured at RDU airport | Direct RDU routine observations, original timestamps preserved. Hourly target convention still needs instructor confirmation. |
+| 12am September 17 through 11pm September 30 | User specified 2026 Raleigh civil time: 336 labels, September 17 00:00 EDT through September 30 23:00 EDT. |
+| Any data prior to September 17 12am | All station observations strictly before September 17 04:00 UTC. Frozen GFS is pre-origin guidance; final observed truth not downloaded. |
+| Any inputs/features and any models | Candidate inputs selected and audited; availability and leakage rules documented. Models still to be fitted. |
+| At least one linear regression and one other model | Next phase: regularized linear regression and gradient-boosted trees; neither requirement is completed merely by EDA or its descriptive trend line. |
+| Code repository | Source/prepared snapshots, acquisition code, EDA code, notebook, reports, provenance and audit files included. |
+| Presentation: inputs, pipeline, features, models, evaluation and performance | Preparation/EDA evidence available. Model and performance material remains. Student authors presentation. |
+| Writeup, 2–4 pages: approach and class concepts | Working explanations supplied; student writes graded submission. |
+| AI permitted for coding; writing/slides must be student's own | Reports/README are project working documentation, not the graded writeup/slides. |
+| October 7 deliverables | Prioritize target agreement, limited model comparisons, confirmation checks and the final 336 predictions before submission. |
+
+The deck does not specify Fahrenheit/Celsius, exact clock-hour measurements versus routine reports versus hourly means, or a grading metric. Our provisional choice is routine-report temperature in Fahrenheit and MAE as the primary development metric; disclose and resolve these assumptions before final scoring. In September Raleigh uses EDT (UTC−4). Fixed EST would shift the forecast labels by one hour and is not the user's Raleigh-time interpretation.
+
+Original PowerPoint redistribution is separate from extracting its requirements. It is not bundled unless explicitly approved for publication.
+''')
+(r/'docs/NEXT_STEPS.md').write_text('''# Modeling plan after EDA
+
+The remaining task is to turn pre-origin information into one 336-hour forecast, not 336 forecasts updated using observations acquired during the test fortnight.
+
+1. **Settle the target and scoring contract.** Confirm units and hourly convention. Review source-disagreement flags using raw evidence; document a consistent label/source policy without examining confirmation weather to choose models. For missing or unresolved targets, report exclusions and score every candidate on the same mask.
+2. **Implement simple baselines first.** Hour/day seasonal climatology fitted on each training fold; NOAA fixed normals only for origins after their 2021 publication; persistence and an origin-known recent daily-cycle baseline. They tell us whether added complexity actually helps.
+3. **Build two required models.** Regularized linear regression with cyclic calendar features, hour-by-season interactions, lead time, and origin-known weather summaries; a gradient-boosted tree regression using the same permitted information. Fit preprocessing and any feature selection solely within the fold. Test the linear model and tree model against baselines; a descriptive EDA trend does not satisfy the required linear forecasting model.
+4. **Compare history and seasons economically.** Use 2021–2023 September origins for five vs ten complete prior years, September vs Aug–Oct vs all months. Include the current-origin year only up to its cutoff using the chosen months. Continuous raw history supplies elapsed-time lags. Keep features and scoring masks matched. Prefer the simpler configuration if average improvements are small or inconsistent across years. The initial Aug–Oct ten-year candidate is justified, but not yet proven best.
+5. **Keep fixed-origin features honest.** A training row must represent information available at its forecast origin. For hour 200, yesterday's actual target-window temperature is unavailable. Use summaries calculated at the origin, recursive predictions if explicitly designed, or frozen forecast inputs. Do not use same-hour observed humidity, rain, pressure, wind, clouds, or METAR target precision as predictors. Calendar features for future hours are known; actual future weather is not.
+6. **Evaluate GFS corrections separately.** April 2–July 23, 2026 initializations are calibration candidates; July 30 is excluded because its valid labels overlap the first August confirmation origin; August 6/13/20/27 runs are reserved confirmation. Fit modest lead/hour-dependent bias correction or residual models only on calibration data and compare with uncorrected guidance on matched August origins. The current diagnostic fits no correction. All runs must be demonstrably or conservatively available before their simulated origins; historical API-serving times remain unverified.
+7. **Lock choices before confirmation.** Station-history models have September 2024 and 2025 confirmation folds. GFS starts in April 2026, so there is no matched 2021–2025 GFS comparison. Do not rank a spring/summer GFS score against a September station-model score as if they were the same test. A decision to include GFS in the final model must acknowledge this limitation.
+8. **Report relevant metrics.** Primary MAE in °F; secondary RMSE and signed bias (prediction minus observation). Report each origin and pooled results, sample counts, each of days 1–14, groups 1–3/4–7/8–14, and daytime/nighttime. Use matched masks. Report improvements over baselines. No temperature MAPE or training R² claims. Weekly GFS windows overlap; use per-origin summaries and avoid treating thousands of hourly pairs as independent samples.
+9. **Create and verify the final file.** Refit chosen station model with permitted history through September 16, 2026; any GFS-based feature comes from the September 16 18Z frozen run. Produce exactly 336 unique ordered labels and temperatures, with model/source metadata. Verify UTC/local conversion, completeness, no final actuals, and no updating during the fortnight. Optional intervals need genuine calibration; one GFS run or historical quantile ribbon is not calibrated uncertainty.
+10. **Complete the student's own deliverables.** Use the evidence and reproducible code to prepare the presentation and 2–4 page writeup, including class concepts, model comparison, final limitations and performance. EDA is complete; modeling, final forecasts and graded submissions remain.
+
+A small set of well-validated candidates is preferable to a large search on only three development Septembers. Existing EDA does not decide an empirical winner. Climate context justifies the history-length comparison; it is not a separate modeling objective.
+''')
+rows='\n'.join(f'| {i+1} | [{f["question"]}](reports/eda/EDA_REPORT.md#{f["title"].lower().replace(" ","-")}) | {f["implication"]} |' for i,f in enumerate(figs))
+# Main README includes decisions and a guide to every diagnostic; report is detailed evidence.
+readme=f'''# RDU hourly temperature forecasting — Project 1
 
 Reproducible data selection, acquisition, quality screening and exploratory analysis for a **336-hour forecast at Raleigh–Durham International Airport (RDU)**. The focus is forecast accuracy, permitted inputs and reliable ML evaluation. This repository currently completes preparation and EDA; it does not contain the required trained models or final predictions.
 
@@ -37,46 +82,23 @@ Covariates preserve reporting meaning: trace rain is distinct from zero, variabl
 
 ## EDA completed and its scope
 
-The main model-design EDA stops **before September 17, 2021**, the earliest development origin. Complete-year comparisons use **2011–2020**, with **93,712 usable temperatures across 93,887 core hourly slots**. This preserves later September test weather for evaluation. Separate sections inspect permissible Aug 1–Sep 16, 2026 observations and pre-issued forecast inputs. GFS errors use April–July calibration runs only; July 30 and August confirmation runs are excluded. General preparation QC may flag reserved-period missingness/source disagreements, but EDA does not use their weather patterns to choose models.
+The main model-design EDA stops **before September 17, 2021**, the earliest development origin. Complete-year comparisons use **2011–2020**, with **{s['core']['usable']:,} usable temperatures across {s['core']['hours']:,} core hourly slots**. This preserves later September test weather for evaluation. Separate sections inspect permissible Aug 1–Sep 16, 2026 observations and pre-issued forecast inputs. GFS errors use April–July calibration runs only; July 30 and August confirmation runs are excluded. General preparation QC may flag reserved-period missingness/source disagreements, but EDA does not use their weather patterns to choose models.
 
 **Results that matter for prediction:**
 
 - The exact historical target fortnight has **3,355 usable hours across ten Septembers**; these are ten annual weather windows, not thousands of independent events. Its median is **70°F**, with a middle 80% range of **59–81°F**.
 - Daily and seasonal cycles are strong, but individual fortnights have very different weather paths. Use calendar features and evaluate whole 14-day forecasts, not random hourly splits.
-- Five-/ten-year target hourly means differ by **1.99°F** on average. This supports a controlled history-length test, not an immediate recency winner.
+- Five-/ten-year target hourly means differ by **{s['five_vs_ten_mean_abs_hourly_difference_f']:.2f}°F** on average. This supports a controlled history-length test, not an immediate recency winner.
 - Removing the training month/hour mean sharply reduces long-lag temperature correlation. A recent observed temperature can help near the origin, but actual future temperatures cannot become later-hour lag inputs.
 - Same-hour dew point/humidity/cloud relationships are descriptive. Their actual future observations are prohibited; use origin-known summaries or frozen forecast guidance. Predictive usefulness still requires validation.
 - The core has **175 unavailable/quarantined temperatures**, a longest unavailable run of **12 hours**, and **37 archive disagreements**. Median absolute IEM/NOAA difference across matched core reports is **0.04°F**; agreement is not independent-sensor validation.
-- All **336 final GFS temperature inputs and normal lookups** are present. In **17 calibration-only GFS origins**, interpolated to actual routine-report timestamps, pooled **MAE is 5.69°F**, **RMSE 7.69°F**, **bias -1.98°F**. Errors increase with lead. **These are exploratory spring/summer benchmark results, not September/final model performance.** The 5,700 scored pairs share only 3,016 distinct report times because weekly windows overlap.
+- All **336 final GFS temperature inputs and normal lookups** are present. In **17 calibration-only GFS origins**, interpolated to actual routine-report timestamps, pooled **MAE is {s['gfs_exploratory_benchmark']['mae_f']:.2f}°F**, **RMSE {s['gfs_exploratory_benchmark']['rmse_f']:.2f}°F**, **bias {s['gfs_exploratory_benchmark']['bias_f']:+.2f}°F**. Errors increase with lead. **These are exploratory spring/summer benchmark results, not September/final model performance.** The 5,700 scored pairs share only 3,016 distinct report times because weekly windows overlap.
 
 Every figure explains its question, data scope, actual finding, forecast implication and limitations in the **[complete EDA report](reports/eda/EDA_REPORT.md)**. For easier offline reading, open **[EDA_REPORT.html](reports/eda/EDA_REPORT.html)** beside its figures. The **[executed notebook](notebooks/01_rdu_eda.ipynb)**, [numeric tables](reports/eda/tables), PNG/SVG figures and [computed summary](reports/eda/summary.json) accompany the report.
 
 | Diagnostic | Question answered | Consequence for forecasting |
 |---|---|---|
-| 1 | [What patterns must a model represent?](reports/eda/EDA_REPORT.md) | Use calendar and hour features. Compare training seasons using matched September backtests. |
-| 2 | [Are there gaps that affect lags, fitting, or scoring?](reports/eda/EDA_REPORT.md) | Keep the hourly grid, retain quality flags, and score only available targets on a shared mask. |
-| 3 | [Why not choose all months purely because there are more rows?](reports/eda/EDA_REPORT.md) | Aug–Oct is the initial candidate because it brackets September. Retain all months to test whether season-aware modeling improves September errors. |
-| 4 | [How representative are neighboring months?](reports/eda/EDA_REPORT.md) | Neighboring months add examples of fronts and daily cycles, but month/day features must represent the autumn cooling. |
-| 5 | [Should hour and season interact?](reports/eda/EDA_REPORT.md) | Use cyclic hour/day-of-year features and consider hour-by-season interactions in linear regression. |
-| 6 | [How much variation does a calendar-only forecast miss?](reports/eda/EDA_REPORT.md) | Calendar averages are useful baselines; forecast weather inputs may explain departures. |
-| 7 | [Is September interchangeable with August and October?](reports/eda/EDA_REPORT.md) | Use continuous calendar features rather than assigning one September constant. |
-| 8 | [How variable is the exact target fortnight?](reports/eda/EDA_REPORT.md) | Validate whole 336-hour forecasts at historical origins; random hourly splitting would share weather events across train and test. |
-| 9 | [How should environmental change affect history selection?](reports/eda/EDA_REPORT.md) | Compare five- and ten-year histories on matched September folds. Do not select a start year as an assumed climate break or add an arbitrary warming correction. |
-| 10 | [Does using less history visibly change the baseline?](reports/eda/EDA_REPORT.md) | This motivates a backtest comparison; it does not establish which window forecasts better. |
-| 11 | [How far does recent-weather dependence persist?](reports/eda/EDA_REPORT.md) | At a fixed origin, future lags must be recursively predicted or replaced by origin-known summaries. Never feed observed target-window lags into later forecast hours. |
-| 12 | [Which variables relate to temperature, and can they be used?](reports/eda/EDA_REPORT.md) | Use observations only as origin-known summaries. Future weather features must come from frozen pre-origin forecasts; RH is also mathematically related to temperature and dew point. |
-| 13 | [What cleaning is needed before feature engineering?](reports/eda/EDA_REPORT.md) | Fit any imputation only on each training fold; retain trace-rain and variable-wind flags. Do not fill missing wind direction with north or empty cloud layers with an invented cloud amount. |
-| 14 | [Do same-hour relationships persist for a two-week forecast?](reports/eda/EDA_REPORT.md) | Test origin-known weather summaries; do not assume same-hour correlations imply 14-day usefulness. |
-| 15 | [Should clouds be treated as a simple ordered numeric feature?](reports/eda/EDA_REPORT.md) | If used, encode observed categories explicitly; future cloud features must be forecast values, with their own representation. |
-| 16 | [Do archive agreement and displayed precision justify treating all values as exact?](reports/eda/EDA_REPORT.md) | Keep raw values, quality codes, provenance and alternate precision. Resolve target definitions before any final scoring. |
-| 17 | [Should unusual weather be removed as an outlier?](reports/eda/EDA_REPORT.md) | Retain physically plausible extremes and events. Flag source errors separately from rare weather. |
-| 18 | [Can daily structure be separated without filling gaps?](reports/eda/EDA_REPORT.md) | This supports explicit daily-cycle features; it is a descriptive diagnostic, not a fitted forecast. |
-| 19 | [Does removing a daily cycle make hours independent?](reports/eda/EDA_REPORT.md) | Use time-respecting validation and weather-event/year-level uncertainty summaries. |
-| 20 | [What does the latest permissible station history look like?](reports/eda/EDA_REPORT.md) | Origin-known recent-weather summaries are candidates for later models. |
-| 21 | [Do the selected forecast and climatology sources cover every required hour?](reports/eda/EDA_REPORT.md) | This is a candidate forecast input/baseline, not the project prediction. Preserve issuance, lead time and interpolation flags. |
-| 22 | [Is raw forecast guidance equally accurate at every lead?](reports/eda/EDA_REPORT.md) | Consider lead-dependent calibration later, and compare candidates on the same origins and observation mask. This analysis fits no correction. |
-| 23 | [Can precipitation be reduced to a simple missing-equals-zero rule?](reports/eda/EDA_REPORT.md) | Retain trace and missing indicators; use rainfall as an origin-known summary or forecast input only after its reporting convention is explicit. |
-| 24 | [How consistent is the airport temperature target across the two archives?](reports/eda/EDA_REPORT.md) | Preserve source codes and match actual timestamps. Review disagreements instead of silently averaging archives or assuming displayed precision is accuracy. |
+{rows}
 
 ## Availability and evaluation rules
 
@@ -117,3 +139,9 @@ Unpacking verifies every bundled file checksum. EDA runs entirely from the saved
 ## Next phase
 
 Confirm the hourly target/units and source-conflict policy, establish baselines, fit the required regularized linear regression and a gradient-boosted tree model, compare history/month choices on development folds, then run locked confirmation checks. Evaluate GFS corrections in their separate chronology. Finally refit with permitted history and produce/audit the 336 predictions. The **[detailed next-step plan](docs/NEXT_STEPS.md)** explains feature availability, fair comparisons, uncertainty and the student's remaining presentation/writeup. EDA conclusions guide these tests; they do not replace them.
+'''
+# Avoid brittle auto-generated anchors: each diagnostic links to the complete report.
+import re
+readme=re.sub(r'\]\(reports/eda/EDA_REPORT\.md#[^)]+\)','](reports/eda/EDA_REPORT.md)',readme)
+(r/'README.md').write_text(readme)
+(r/'docs/EDA_SCOPE.json').write_text(json.dumps({'final_origin_utc':'2026-09-17T04:00:00Z','final_hours':336,'initial_eda_exclusive_cutoff_utc':'2021-09-17T04:00:00Z','full_year_comparisons':'2011–2020','known_context':'2026 Aug 1–Sep 16','gfs_calibration_latest_initialization':'2026-07-23T18:00:00Z','no_final_actuals':True,'forecast_target_definition':'routine report provisionally assigned to clock-hour; instructor confirmation pending'},indent=2)+'\n')

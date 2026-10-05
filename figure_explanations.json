@@ -1,0 +1,218 @@
+[
+  {
+    "name": "01_history",
+    "title": "The annual temperature cycle dominates the history",
+    "question": "What patterns must a model represent?",
+    "scope": "2011 through September 16, 2021, before the first development origin.",
+    "finding": "93,887 expected hourly slots; 93,712 usable temperatures. Warm and cold seasons repeat, with substantial daily variation.",
+    "implication": "Use calendar and hour features. Compare training seasons using matched September backtests.",
+    "limitation": "Daily means describe hourly reports, not continuous daily extrema. Partial 2021 is not compared as a complete year."
+  },
+  {
+    "name": "02_missingness",
+    "title": "Quality exclusions and missing observations",
+    "question": "Are there gaps that affect lags, fitting, or scoring?",
+    "scope": "Training scope only; absent or quarantined targets counted as unavailable.",
+    "finding": "175 unavailable hours (0.186%); longest consecutive run is 12 hours.",
+    "implication": "Keep the hourly grid, retain quality flags, and score only available targets on a shared mask.",
+    "limitation": "Gray/empty cells after the 2021 cutoff were not analyzed; unavailable includes source disagreements, not just absent reports."
+  },
+  {
+    "name": "03_months",
+    "title": "All months provide more examples, but different temperature regimes",
+    "question": "Why not choose all months purely because there are more rows?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "September mean is 72.5\u00b0F; January 41.6\u00b0F and July 80.1\u00b0F.",
+    "implication": "Aug\u2013Oct is the initial candidate because it brackets September. Retain all months to test whether season-aware modeling improves September errors.",
+    "limitation": "Boxes show quartiles and whiskers; hidden outlier markers are retained in data. Row count does not equal independent weather episodes."
+  },
+  {
+    "name": "04_season_distributions",
+    "title": "The target fortnight sits within a changing autumn distribution",
+    "question": "How representative are neighboring months?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "Historical target-window median 70.0\u00b0F; middle 80% spans 59.0\u201381.0\u00b0F.",
+    "implication": "Neighboring months add examples of fronts and daily cycles, but month/day features must represent the autumn cooling.",
+    "limitation": "These are descriptive historical quantiles, not calibrated forecast intervals for 2026."
+  },
+  {
+    "name": "05_month_hour",
+    "title": "The daily cycle changes with season",
+    "question": "Should hour and season interact?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "The warmest average hours occur in the afternoon; nights and mornings are cooler. Seasonal means and daily ranges differ.",
+    "implication": "Use cyclic hour/day-of-year features and consider hour-by-season interactions in linear regression.",
+    "limitation": "Civil-hour grouping respects DST; it is not an elapsed-time lag. Means conceal cloudy, wet, and frontal regimes."
+  },
+  {
+    "name": "06_daily_cycle",
+    "title": "Weather variation is wider than the average daily cycle",
+    "question": "How much variation does a calendar-only forecast miss?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "September mean cycle range is 15.1\u00b0F, peaking at civil hour 15.",
+    "implication": "Calendar averages are useful baselines; forecast weather inputs may explain departures.",
+    "limitation": "Shaded 10th\u201390th percentiles are weather dispersion, not uncertainty in the mean or forecast coverage."
+  },
+  {
+    "name": "07_autumn_transition",
+    "title": "The forecast window is part of an autumn cooling transition",
+    "question": "Is September interchangeable with August and October?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "Average temperature declines through the candidate season; individual years depart considerably from that pattern.",
+    "implication": "Use continuous calendar features rather than assigning one September constant.",
+    "limitation": "Smoothing is descriptive and uses neighboring training days; it is not a forecast and is not applied across evaluation cutoffs."
+  },
+  {
+    "name": "08_target_weather",
+    "title": "Ten historical Septembers show different two-week weather paths",
+    "question": "How variable is the exact target fortnight?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "3,355 usable target-like hours represent only ten annual fortnights.",
+    "implication": "Validate whole 336-hour forecasts at historical origins; random hourly splitting would share weather events across train and test.",
+    "limitation": "Training-era examples are descriptive; 2021\u20132025 evaluation fortnight outcomes are not plotted here."
+  },
+  {
+    "name": "09_recency",
+    "title": "Year-to-year weather complicates a short-record warming estimate",
+    "question": "How should environmental change affect history selection?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "The descriptive September slope is +2.74\u00b0F/decade (slope SE 2.69); only ten yearly means support it.",
+    "implication": "Compare five- and ten-year histories on matched September folds. Do not select a start year as an assumed climate break or add an arbitrary warming correction.",
+    "limitation": "Night/afternoon groups are proxies, not observed daily minima/maxima. Ten years cannot isolate global warming, urban development, station changes, or circulation effects."
+  },
+  {
+    "name": "10_history_sensitivity",
+    "title": "History length changes the estimated seasonal baseline",
+    "question": "Does using less history visibly change the baseline?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F.",
+    "finding": "Five- vs ten-year target-window hourly means differ by 1.99\u00b0F on average in absolute value.",
+    "implication": "This motivates a backtest comparison; it does not establish which window forecasts better.",
+    "limitation": "This is the 2021-origin comparison. The final 2026 ten-year candidate is 2016\u20132025; its optimality has not been established."
+  },
+  {
+    "name": "11_lag_dependence",
+    "title": "Recent temperatures are informative, but dependence changes with horizon",
+    "question": "How far does recent-weather dependence persist?",
+    "scope": "Core pre-2021-origin history; both ends of each pair must fall in Aug\u2013Oct.",
+    "finding": "Calendar-demeaned lag correlations: 24h 0.64; 168h 0.03; 336h -0.03.",
+    "implication": "At a fixed origin, future lags must be recursively predicted or replaced by origin-known summaries. Never feed observed target-window lags into later forecast hours.",
+    "limitation": "These pairwise descriptive correlations are not forecast skill. Calendar means are calculated in the same training sample; no significance bands assume independent hours."
+  },
+  {
+    "name": "12_feature_relationships",
+    "title": "Same-hour weather relationships require an availability check",
+    "question": "Which variables relate to temperature, and can they be used?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F. Aug\u2013Oct only.",
+    "finding": "Temperature/dew-point correlation is 0.74; temperature/RH -0.43.",
+    "implication": "Use observations only as origin-known summaries. Future weather features must come from frozen pre-origin forecasts; RH is also mathematically related to temperature and dew point.",
+    "limitation": "Associations combine daily/seasonal cycles and weather effects; they are not causal effects or evidence of incremental predictive value."
+  },
+  {
+    "name": "13_feature_availability",
+    "title": "Observation fields have different completeness and meanings",
+    "question": "What cleaning is needed before feature engineering?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F. Aug\u2013Oct only.",
+    "finding": "Availability varies by field; target screening and covariate missingness have different causes.",
+    "implication": "Fit any imputation only on each training fold; retain trace-rain and variable-wind flags. Do not fill missing wind direction with north or empty cloud layers with an invented cloud amount.",
+    "limitation": "Numeric precipitation blanks may mean no reported amount, not confirmed zero. Some calm METARs have blank parsed speed; preserve originals pending explicit parsing rules."
+  },
+  {
+    "name": "14_lagged_features",
+    "title": "Observed inputs have a horizon-dependent relationship with temperature",
+    "question": "Do same-hour relationships persist for a two-week forecast?",
+    "scope": "Core Aug\u2013Oct pairs; temperature has training month/hour mean removed.",
+    "finding": "The table reports exact-time associations at 1, 6, 24, 72, 168 and 336 hours, with the number of available pairs.",
+    "implication": "Test origin-known weather summaries; do not assume same-hour correlations imply 14-day usefulness.",
+    "limitation": "Predictor calendar patterns are not removed. These associations are exploratory; only out-of-sample comparisons can establish useful features."
+  },
+  {
+    "name": "15_cloud_regimes",
+    "title": "Cloud categories accompany different daytime and nighttime regimes",
+    "question": "Should clouds be treated as a simple ordered numeric feature?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F. Aug\u2013Oct only; first reported cloud layer.",
+    "finding": "Mean temperature departures differ by cloud category and time of day; category sample counts are supplied.",
+    "implication": "If used, encode observed categories explicitly; future cloud features must be forecast values, with their own representation.",
+    "limitation": "The first layer does not measure total cloud cover. Weather regimes confound associations, and categories with small counts are unstable."
+  },
+  {
+    "name": "16_source_precision",
+    "title": "Two archives verify the same observations; precision is a separate issue",
+    "question": "Do archive agreement and displayed precision justify treating all values as exact?",
+    "scope": "Core pre-2021-origin reports; paired values only.",
+    "finding": "93,655 IEM/T-group pairs; median absolute difference 0.040\u00b0F; 37 core targets are quarantined.",
+    "implication": "Keep raw values, quality codes, provenance and alternate precision. Resolve target definitions before any final scoring.",
+    "limitation": "IEM and NOAA share airport observations and are not independent sensors. Parsed T-group temperature must never be used as a predictor of the same temperature target."
+  },
+  {
+    "name": "17_event_context",
+    "title": "A September 2018 event illustrates a changing weather regime",
+    "question": "Should unusual weather be removed as an outlier?",
+    "scope": "September 10\u201319, 2018, training history surrounding Hurricane Florence.",
+    "finding": "Temperature and pressure evolve together across this event; unusually persistent weather is part of the forecasting problem.",
+    "implication": "Retain physically plausible extremes and events. Flag source errors separately from rare weather.",
+    "limitation": "This plot does not attribute every fluctuation to the hurricane, and hourly samples are not true continuous extrema."
+  },
+  {
+    "name": "18_contiguous_decomposition",
+    "title": "A continuous training segment separates daily cycle and slower change",
+    "question": "Can daily structure be separated without filling gaps?",
+    "scope": "Longest gap-free Aug\u2013Oct 2020 run: 2020-09-06 04:00:00+00:00 to 2020-10-28 12:00:00+00:00; 1257 hours.",
+    "finding": "STL separates a repeating 24-hour component, a smooth trend, and residual weather variation.",
+    "implication": "This supports explicit daily-cycle features; it is a descriptive diagnostic, not a fitted forecast.",
+    "limitation": "The two-sided smoother is training-only. One segment and a chosen 24-hour period do not establish the optimal model. DST is handled in elapsed UTC hours."
+  },
+  {
+    "name": "19_residual_pacf",
+    "title": "Residual dependence remains after descriptive decomposition",
+    "question": "Does removing a daily cycle make hours independent?",
+    "scope": "Same 1257-hour gap-free 2020 training segment.",
+    "finding": "The PACF reports remaining short-lag dependence conditional on intermediate lags.",
+    "implication": "Use time-respecting validation and weather-event/year-level uncertainty summaries.",
+    "limitation": "This segment is not a model-selection test. No confidence bands are shown because iid-hour assumptions are inappropriate."
+  },
+  {
+    "name": "20_2026_known_context",
+    "title": "Weather known before the final forecast origin",
+    "question": "What does the latest permissible station history look like?",
+    "scope": "August 1\u2013September 16, 2026 only; separate from the initial model-design EDA.",
+    "finding": "1,128 known-hour slots; mean departure from the 2011\u20132020 calendar/hour reference is +3.45\u00b0F.",
+    "implication": "Origin-known recent-weather summaries are candidates for later models.",
+    "limitation": "A few weeks of weather are not evidence of a climate shift; no September 17\u201330, 2026 observations were accessed."
+  },
+  {
+    "name": "21_frozen_forecast_input",
+    "title": "A complete pre-origin GFS trajectory covers the required 336 hours",
+    "question": "Do the selected forecast and climatology sources cover every required hour?",
+    "scope": "Forecast inputs for Sep 17 00:00\u2013Sep 30 23:00 Raleigh civil time; no final observed outcomes.",
+    "finding": "All 336 GFS temperature values and 336 normal lookups are present; 225 GFS target slots fall after native hourly resolution ends.",
+    "implication": "This is a candidate forecast input/baseline, not the project prediction. Preserve issuance, lead time and interpolation flags.",
+    "limitation": "GFS is gridded and one forecast trajectory supplies no calibrated uncertainty. Normals use local standard time (UTC\u22125), correctly offset from September EDT (UTC\u22124). Routine-report :51 scoring still needs agreed alignment."
+  },
+  {
+    "name": "22_gfs_calibration_diagnostic",
+    "title": "Frozen GFS error varies across the two-week horizon",
+    "question": "Is raw forecast guidance equally accurate at every lead?",
+    "scope": "Calibration-only April 2\u2013July 23, 2026 initializations; July 30 and August confirmation runs excluded.",
+    "finding": "17 origins; 5,700 scored forecast/report pairs. Pooled MAE 5.69\u00b0F, RMSE 7.69\u00b0F, bias -1.98\u00b0F.",
+    "implication": "Consider lead-dependent calibration later, and compare candidates on the same origins and observation mask. This analysis fits no correction.",
+    "limitation": "An exploratory routine-report benchmark: interpolate the same frozen run to each actual :51 report timestamp. Weekly valid windows overlap, so pairs are not independent. Spring/summer errors are not September or final-project scores. Historical API publication times were not individually logged."
+  },
+  {
+    "name": "23_rain_regimes",
+    "title": "Trace rain, explicit zero and missing amounts have different meanings",
+    "question": "Can precipitation be reduced to a simple missing-equals-zero rule?",
+    "scope": "Complete training years 2011\u20132020; RDU routine reports; screened temperature in \u00b0F. Aug\u2013Oct only.",
+    "finding": "The table distinguishes positive measured precipitation, trace, explicit numeric zero, and no numeric amount, with counts and temperature associations.",
+    "implication": "Retain trace and missing indicators; use rainfall as an origin-known summary or forecast input only after its reporting convention is explicit.",
+    "limitation": "These are contemporaneous associations, not a causal rain effect or a forecast test. A missing numeric amount does not establish dry weather."
+  },
+  {
+    "name": "24_archive_agreement",
+    "title": "Exact-timestamp archive comparisons separate rounding from disagreements",
+    "question": "How consistent is the airport temperature target across the two archives?",
+    "scope": "Matched IEM/NOAA reports strictly before the first September 2021 origin.",
+    "finding": "93,754 matched reports; median absolute archive difference 0.040\u00b0F; 37 require review.",
+    "implication": "Preserve source codes and match actual timestamps. Review disagreements instead of silently averaging archives or assuming displayed precision is accuracy.",
+    "limitation": "Histogram omits quarantined pairs but their counts are reported. Both archives derive from the same station; later archive revisions cannot be proven to match what was distributed historically."
+  }
+]

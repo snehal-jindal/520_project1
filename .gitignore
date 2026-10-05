@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+data/pre_eda/
+*.pyc
+*.egg-info/
+reports/eda/.mpl-cache/
+
+reports/eda/.ipython-cache/
+reports/eda/.jupyter-runtime/

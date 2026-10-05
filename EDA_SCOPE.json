@@ -1,0 +1,10 @@
+{
+  "final_origin_utc": "2026-09-17T04:00:00Z",
+  "final_hours": 336,
+  "initial_eda_exclusive_cutoff_utc": "2021-09-17T04:00:00Z",
+  "full_year_comparisons": "2011\u20132020",
+  "known_context": "2026 Aug 1\u2013Sep 16",
+  "gfs_calibration_latest_initialization": "2026-07-23T18:00:00Z",
+  "no_final_actuals": true,
+  "forecast_target_definition": "routine report provisionally assigned to clock-hour; instructor confirmation pending"
+}

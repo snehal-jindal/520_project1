@@ -1,0 +1,5 @@
+rain_regime,hours,usable_temperature,mean_temperature_departure_f
+Explicit numeric zero,17679,17679,0.24092964445355283
+Measured positive,1318,1318,-2.22839188241523
+No numeric amount,1987,1957,0.00403004343288107
+Trace,1096,1096,-1.2137422246981988
