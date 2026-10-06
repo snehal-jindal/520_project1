@@ -93,7 +93,9 @@ def evaluate(df: pd.DataFrame, models: dict, origin_list, years: int = 10):
     for origin in origin_list:
         hist = history_before(df, origin, years)
         win = target_window(df, origin)
-        p = {name: np.asarray(f(hist, win), dtype=float) for name, f in models.items()}
+        # Models see only the calendar of the target hours, never the actual temperatures.
+        calendar = win.drop(columns='temperature')
+        p = {name: np.asarray(f(hist, calendar), dtype=float) for name, f in models.items()}
         mask = win.temperature.notna().to_numpy()
         for v in p.values():
             mask &= ~np.isnan(v)
