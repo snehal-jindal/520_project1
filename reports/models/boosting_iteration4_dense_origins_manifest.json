@@ -1,0 +1,32 @@
+{
+  "boost_5y_origins_every_7d": {
+    "history_years": 5,
+    "min_history_years": 2,
+    "loss": "squared_error",
+    "max_iter": 200,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 40,
+    "l2_regularization": 1.0,
+    "correction_decay_hours": 120.0,
+    "include_dew_point_pressure": true,
+    "include_enhanced_origin_features": false,
+    "training_origin_stride_days": 7,
+    "random_state": 520
+  },
+  "boost_5y_origins_every_3d": {
+    "history_years": 5,
+    "min_history_years": 2,
+    "loss": "squared_error",
+    "max_iter": 200,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 40,
+    "l2_regularization": 1.0,
+    "correction_decay_hours": 120.0,
+    "include_dew_point_pressure": true,
+    "include_enhanced_origin_features": false,
+    "training_origin_stride_days": 3,
+    "random_state": 520
+  }
+}

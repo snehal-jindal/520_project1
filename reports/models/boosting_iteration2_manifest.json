@@ -1,0 +1,50 @@
+{
+  "boost_10y_initial": {
+    "history_years": 10,
+    "min_history_years": 3,
+    "max_iter": 200,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 40,
+    "l2_regularization": 1.0,
+    "correction_decay_hours": 72.0,
+    "include_dew_point_pressure": true,
+    "random_state": 520
+  },
+  "boost_5y_initial": {
+    "history_years": 5,
+    "min_history_years": 2,
+    "max_iter": 200,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 40,
+    "l2_regularization": 1.0,
+    "correction_decay_hours": 72.0,
+    "include_dew_point_pressure": true,
+    "random_state": 520
+  },
+  "boost_10y_no_dew_pressure": {
+    "history_years": 10,
+    "min_history_years": 3,
+    "max_iter": 200,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 40,
+    "l2_regularization": 1.0,
+    "correction_decay_hours": 72.0,
+    "include_dew_point_pressure": false,
+    "random_state": 520
+  },
+  "boost_10y_shallow": {
+    "history_years": 10,
+    "min_history_years": 3,
+    "max_iter": 200,
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 40,
+    "l2_regularization": 1.0,
+    "correction_decay_hours": 72.0,
+    "include_dew_point_pressure": true,
+    "random_state": 520
+  }
+}
