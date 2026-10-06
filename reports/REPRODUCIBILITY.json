@@ -1,0 +1,40 @@
+{
+  "source_commit": "ee91a2c24df4d69488d8ee54de4f2fcc5a9db001",
+  "clean_remote_clone": true,
+  "fresh_virtual_environment": true,
+  "python_version": "3.12.14",
+  "dependency_lock": "requirements-lock.txt",
+  "restored_preparation_files_verified": 96,
+  "combined_tests_passed": 28,
+  "model_settings_changed": false,
+  "submitted_model_changed": false,
+  "forecast_rows": 336,
+  "forecast_values_unchanged": true,
+  "original_final_actuals_and_timestamps_reproduced": true,
+  "original_model_score_rows_reproduced": 12,
+  "final_candidate_and_baseline_score_rows": 20,
+  "eda_numeric_tables_byte_identical": 31,
+  "eda_scope_metadata_updated": true,
+  "executed_notebook_error_outputs": 0,
+  "historical_linear_confirmation_reproduced": true,
+  "gfs_rolling_evaluation_reproduced": true,
+  "prediction_sha256": "b692b96d8a3662b7bb9122796e2f62176f2cb834567c9a0bcdd3b4d1492f6d42",
+  "commands_verified": [
+    "python scripts/unpack_data.py",
+    "python -m unittest discover -s tests -v",
+    "python scripts/final_forecast.py",
+    "python scripts/validate_final_forecast.py",
+    "python scripts/build_documentation.py",
+    "python scripts/build_notebook.py",
+    "python scripts/confirm_linear.py",
+    "python scripts/run_gfs.py"
+  ],
+  "not_repeated": [
+    "All 48 tuning configurations",
+    "All archived boosting experiments"
+  ],
+  "limits": [
+    "Actual snapshot was newly retrieved and matched committed targets; original download was not retained.",
+    "Serving-time limits and internal Ridge reference policy are documented in docs/MODEL_AUDIT.md."
+  ]
+}

@@ -5,6 +5,8 @@
   "full_year_comparisons": "2011\u20132020",
   "known_context": "2026 Aug 1\u2013Sep 16",
   "gfs_calibration_latest_initialization": "2026-07-23T18:00:00Z",
-  "no_final_actuals": true,
-  "forecast_target_definition": "routine report provisionally assigned to clock-hour; instructor confirmation pending"
+  "no_final_actuals": "EDA loader excludes final actuals; evaluation-only actuals exist elsewhere in the repository.",
+  "forecast_target_definition": "Routine report assigned to clock-hour in Fahrenheit; accepted user convention.",
+  "earliest_implemented_development_origin_utc": "2021-08-27T04:00:00Z",
+  "early_development_overlap_with_original_eda": true
 }

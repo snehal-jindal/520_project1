@@ -1,8 +1,9 @@
 """Verify archive contents, notebook execution, links and file completeness."""
 from pathlib import Path
-import csv,hashlib,json,re,zipfile
+import csv,hashlib,json,re,zipfile,sys
 import nbformat
 root=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(root))
 def deliverable_files():
     for p in sorted(root.rglob('*')):
         rel=p.relative_to(root)
@@ -41,6 +42,24 @@ def audit():
     for item in explanations:
         for ext in ['png','svg']:
             if not (root/'reports/eda/figures'/(item['name']+'.'+ext)).exists():errors.append('Missing figure '+item['name'])
+    from scripts.download_final_actuals import verify_snapshot
+    from src.final_evaluation import validate_forecast, verify_frozen_forecast, join_actuals, metrics, ALL_COLUMNS
+    import pandas as pd
+    from src.data_access import load_observations, FINAL_ORIGIN
+    verify_snapshot()
+    forecast_path=root/'reports/final/final_forecast_336h.csv'
+    verify_frozen_forecast(forecast_path,root/'docs/FORECAST_RECORD.json')
+    forecast=validate_forecast(pd.read_csv(forecast_path))
+    actual=pd.read_csv(root/'reports/final/iem_rdu_final_actuals.csv',dtype={'tmpf':str})
+    joined=join_actuals(forecast,actual)
+    saved=pd.read_csv(root/'reports/final/final_validation_scores.csv')
+    for column,label in ALL_COLUMNS.items():
+        row=saved.loc[saved.model.eq(label)&saved.horizon.eq('overall')].iloc[0]
+        for key,value in metrics(joined.actual_f,joined[column]).items():
+            if abs(float(row[key])-value)>1e-10:errors.append('Final score mismatch '+label+' '+key)
+    history=load_observations(root)
+    if history.observed_at.dropna().max()>=FINAL_ORIGIN:errors.append('Final outcomes entered model history')
+    reproduction=json.loads((root/'reports/REPRODUCIBILITY.json').read_text())
     # Host paths and private contact data have no place in the published text.
     for p in deliverable_files():
         if p.suffix.lower() in ['.py','.md','.json','.csv','.ipynb','.html','.txt']:
@@ -53,12 +72,20 @@ def audit():
             'numeric_tables':len(list((root/'reports/eda/tables').glob('*.csv'))),
             'executed_notebook_code_cells':len(code),'notebook_error_outputs':0,
             'contract_test_command':'python -m unittest discover -s tests -v',
-            'known_limits':['Routine-report target convention and units await instructor confirmation.',
-                           'Source disagreements need a fixed policy before model scoring.',
+            'final_target_hours':len(forecast),'final_observed_hours':len(joined),
+            'selected_model':'GFS-corrected Ridge','final_predictions_hash_verified':True,
+            'evaluation_snapshot_hash_verified':True,'training_final_outcomes_excluded':True,
+            'reproduction_checks':reproduction,
+            'known_limits':['Routine airport report assigned to its hour in Fahrenheit is the accepted project convention.',
+                           'Historical source disagreements remain unavailable and are excluded on the shared scoring mask.',
                            'Historical source archives are revised snapshots, not verified historical release snapshots.',
-                           'GFS benchmark is calibration-only spring/summer, with overlapping windows.',
+                           'GFS clock-hour temperatures are predictors of the :51 report; raw GFS baseline retains that timestamp difference.',
+                           'All historical GFS publication times and original Open-Meteo serving times were not individually verified.',
+                           'Ridge preprocessing uses the full outer-training reference, not a separate pre-pseudo-origin normal.',
+                           'Ridge selection rationale is team-reported and numerical tradeoffs verified; overlapping origins limit uncertainty claims.',
+                           'Early 2021 development windows partly overlap the original EDA scope.',
                            'Original PowerPoint is not redistributed without specific publication approval.',
-                           'Required forecast models, final predictions and student-authored submissions remain.']}
+                           'Student-authored presentation/writeup and course submission are outside this code audit.']}
     (root/'reports/COMPLETION_AUDIT.json').write_text(json.dumps(result,indent=2)+'\n')
     records=[]
     for p in deliverable_files():
@@ -71,7 +98,7 @@ def audit():
     for name in ['reports/FILE_INVENTORY.csv','reports/SHA256SUMS.txt']:
         records.append({'location':'committed','path':name,'container':'','bytes':'self-referential','sha256':'not self-hashed'})
     with (root/'reports/FILE_INVENTORY.csv').open('w',newline='') as f:
-        writer=csv.DictWriter(f,fieldnames=['location','path','container','bytes','sha256']);writer.writeheader();writer.writerows(records)
+        writer=csv.DictWriter(f,fieldnames=['location','path','container','bytes','sha256'],lineterminator='\n');writer.writeheader();writer.writerows(records)
     (root/'reports/SHA256SUMS.txt').write_text('\n'.join(e['sha256']+'  '+e['path'] for e in records if e['location']=='committed' and e['sha256']!='not self-hashed')+'\n')
     print(json.dumps(result,indent=2))
     if errors:raise SystemExit('Audit failed')

@@ -10,11 +10,11 @@
   "target_first_local": "2026-09-17T00:00:00-04:00",
   "target_last_local": "2026-09-30T23:00:00-04:00",
   "output_hours": 336,
-  "observation_hour_mapping": "Provisional floor to same clock hour; exact report time retained. Must match instructor target convention before scoring.",
-  "target_units": "Fahrenheit provisionally; deck does not prescribe units.",
-  "primary_candidate": "Aug\u2013Oct, ten complete prior seasons 2016\u20132025 plus Aug1\u2013Sep16 2026",
+  "observation_hour_mapping": "Routine report assigned to its clock-hour label; actual timestamp retained. Accepted user convention.",
+  "target_units": "Fahrenheit",
+  "primary_candidate": "GFS-corrected Ridge, selected in commit 3f3dc0b before the final-validation commit",
   "raw_archive": "2011 local Jan1 through final exclusive cutoff; all months",
-  "source_conflicts": "Retain raw labels and NOAA alternatives; temporary usable-label mask pending source review.",
+  "source_conflicts": "Unavailable/quarantined labels remain excluded on shared valid-target masks.",
   "primary_metric": "MAE",
   "secondary_metric": "RMSE",
   "diagnostic_metric": "signed_bias",
@@ -45,12 +45,17 @@
     "2026-08-20T18:00Z",
     "2026-08-27T18:00Z"
   ],
-  "gfs_overlap_excluded_run": "2026-07-30T18:00Z",
+  "gfs_overlap_excluded_run": "Excluded from original EDA; eligible in subsequent rolling model evaluation only when all labels precede its origin.",
   "models_required_later": [
-    "linear regression",
-    "another fitted model; initial candidate gradient-boosted trees"
+    "Implemented: Ridge linear regression and histogram gradient boosting"
   ],
-  "current_stop": "before EDA",
-  "target_actuals_present": false,
-  "models_fitted": false
+  "current_stop": "Models and final validation complete; final outcomes remain evaluation-only.",
+  "target_actuals_present": true,
+  "models_fitted": true,
+  "target_actuals_location": "reports/final/iem_rdu_final_actuals.csv",
+  "station_history_years": 10,
+  "boosting_history_years": 5,
+  "gfs_model_policy": "Rolling training on earlier runs whose full label windows ended before the forecast origin; at least six runs; alpha=10.",
+  "development_origins": "Seven local-midnight starts Aug27, Sep3, Sep10, Sep17, Sep24, Oct1, Oct8 in each 2021\u20132023 year.",
+  "confirmation_origins": "Same seven starts in 2024\u20132025."
 }

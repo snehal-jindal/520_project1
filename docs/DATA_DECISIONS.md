@@ -1,5 +1,7 @@
 # RDU temperature project: data decisions before EDA
 
+Current-state note: this file records the original source/preparation decisions. Final models, accepted target convention, historical-reference policies and final evaluation provenance are documented in MODEL_AUDIT.md and README.md; initial candidate proposals are not current unfinished work.
+
 This is a working record of data preparation, not the graded project writeup. No exploratory plots, correlations, forecasting models or performance scores have been produced. The choices below are reasoned starting choices; historical forecasting tests must establish which choices work best.
 
 ## 1. What we must predict

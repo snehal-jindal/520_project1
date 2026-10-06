@@ -96,3 +96,9 @@ Blank numeric values are missing, not zeros. Dates retain timezone offsets. Temp
 | api_hourly_interpolation_after_120h | True where hourly outputs derive from native three-hour model output. |
 
 The all-month, full seasonal and initial EDA-training files use the same observation schema. Historical GFS files use the same forecast schema. The validation plan records test year, role, exact origin/end boundaries, five- or ten-year history, month selection and usable training/test counts; these are split instructions, not performance scores. Raw IEM files preserve M for missing values and T for trace rainfall. NOAA PSV files preserve their original source/measurement/quality/report codes, defined in the saved NOAA documentation. Audit comparison files retain both temperatures, differences, rounding consistency and review flags.
+
+## Final evaluation-only files
+
+reports/final/iem_rdu_final_actuals.csv contains station=RDU, valid (original UTC report time), tmpf (archive Fahrenheit target), and raw metar text. Its request, retrieval time and checksum are in final_observation_manifest.json. This file is never part of data/pre_eda or model fitting.
+
+The final forecast columns contain Fahrenheit temperatures. submitted_forecast_f equals gfs_ridge_f and is the preselected answer. lead_hours is an ordinal (1–336), not elapsed time from the first label. final_forecast_with_actuals.csv adds observed_at_utc, minutes_after_hour, actual_f and prediction-minus-actual errors. All candidates/baselines share the 336 observed reports. Per-day and day/night score tables include MAE, RMSE, signed bias and n; day/night is local 06–17 versus other hours.

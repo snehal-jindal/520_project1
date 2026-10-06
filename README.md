@@ -1,119 +1,132 @@
 # RDU hourly temperature forecasting — Project 1
 
-Reproducible data selection, acquisition, quality screening and exploratory analysis for a **336-hour forecast at Raleigh–Durham International Airport (RDU)**. The focus is forecast accuracy, permitted inputs and reliable ML evaluation. This repository currently completes preparation and EDA; it does not contain the required trained models or final predictions.
+This repository contains the complete data preparation, exploratory analysis, fitted forecasting approaches, historical evaluation and final evaluation for **336 hourly RDU airport temperatures, September 17–30, 2026**. The submitted forecast is **GFS-corrected Ridge**; station Ridge and gradient boosting are retained as evaluated alternatives. The required linear and nonlinear model types are implemented. Graded slides and the 2–4 page writeup are separate student-authored deliverables.
 
-## The forecast we must produce
+## Goal and information cutoff
 
-Issue one forecast at **September 17, 2026, 00:00 Raleigh civil time**, covering every hourly label through **September 30, 2026, 23:00**. September is EDT (UTC−4), so the exclusive observation cutoff is **September 17 04:00 UTC** and the final label is **October 1 03:00 UTC**. There are exactly **336 hours**. Inputs must be known before the origin; later observations may not update the forecast. The PowerPoint requires **linear regression plus another model**, a code repository, a presentation and a 2–4 page writeup. [All requirements and assumptions](docs/PROJECT_REQUIREMENTS.md).
+Predict the routine airport temperature report representing each hour from **September 17, 2026 00:00 through September 30 23:00, Raleigh time**. Reports usually occur at **:51**; their actual timestamps are retained. This accepted project convention is not an exact clock-hour reading or an hourly average. All temperatures and error metrics use **Fahrenheit**.
 
-**Resolve before scoring:** routine RDU observations usually arrive at **:51**. We retain their actual times and provisionally assign each routine report to its clock-hour label. That is not an exact on-the-hour reading or an hourly average. The deck leaves this definition and units unspecified; current analysis uses °F. NOAA normals use local standard time (UTC−5), correctly adjusted for EDT. The deck permits AI coding but requires the student's own graded writing/slides; this README and report are working documentation.
+September is EDT (UTC−4). The exclusive model-input cutoff is **September 17 04:00 UTC**, and the last hour label is **October 1 03:00 UTC**. Every approach predicts the whole fortnight once. Actual target-period weather is never used to update later-hour predictions. These are retrospectively simulated forecasts under that cutoff, not a claim of real-time September issuance. [Assignment requirements](docs/PROJECT_REQUIREMENTS.md), [data contract](docs/data_contract.json).
 
-## Data sources: what we chose and why
+## Final results and submitted file
 
-| Selected source | Role | Coverage and tradeoff |
+All candidates were scored against the same **336 actual routine reports**, after the submitted choice had been recorded. These are final September 2026 errors, distinct from the historical practice scores below.
+
+| Approach | MAE, °F | RMSE, °F | Bias, °F |
+|---|---:|---:|---:|
+| **GFS-corrected Ridge — submitted** | 5.393 | 7.200 | +2.284 |
+| Station Ridge | 5.578 | 7.257 | +1.857 |
+| Gradient boosting | 6.369 | 7.761 | +0.146 |
+| Historical-average climatology | 6.288 | 7.682 | +0.182 |
+| Raw GFS | 6.366 | 7.824 | -0.313 |
+
+MAE measures average absolute error; RMSE emphasizes larger misses; signed bias is prediction minus observation. Small bias can hide compensating warm/cold errors. One fortnight cannot establish universal superiority. [Computed final report](reports/final/FINAL_VALIDATION_REPORT.md), [score rows](reports/final/final_validation_scores.csv), [per-day errors](reports/final/final_validation_by_day.csv), [day/night errors](reports/final/final_validation_day_night.csv).
+
+The **[final prediction CSV](reports/final/final_forecast_336h.csv)** has 336 ordered local/UTC timestamps. `submitted_forecast_f` equals `gfs_ridge_f`. Other columns are `station_ridge_f`, `gradient_boosting_f`, `climatology_f` and `raw_gfs_f`. `lead_hours` is a target-hour ordinal from 1 to 336; the first label is at the origin, not one elapsed hour later. The exact pre-outcome file/version is preserved by [FORECAST_RECORD](docs/FORECAST_RECORD.json). No prediction values were changed in the reproducibility audit.
+
+![Final observed temperatures and candidate forecasts](reports/final/final_validation_plot.png)
+
+## Data selection and coverage
+
+| Source | Role and retained coverage | Why selected / limitation |
 |---|---|---|
-| [Iowa Environmental Mesonet RDU routine METAR archive](https://mesonet.agron.iastate.edu/request/download.phtml?network=NC_ASOS) | Airport temperature target, observed dew point, RH, wind, pressure, rain, clouds and raw METAR trace | All months, January 1, 2011 to the exclusive 2026 cutoff. Direct airport observations with consistent routine-report sampling; archive QC is limited, so cross-checks are necessary. |
-| [NOAA GHCN-hourly](https://www.ncei.noaa.gov/products/global-historical-climatology-network-hourly) | Exact-timestamp temperature verification, source codes and quality flags | 2011–2025 yearly files. The 2026 full-year archive was not fetched because it would include final-test truth. It shares underlying airport measurements with IEM, so it is verification rather than an independent target dataset. |
-| [NOAA 1991–2020 hourly normals](https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals) | Fixed seasonal/hourly climatology benchmark | 8,760 calendar-hour values and all 336 final lookups. Published in 2021: not valid as a historical as-of benchmark before publication, and not 30 extra training years. Local-standard-time mapping retained. |
-| [Open-Meteo single-run GFS archive](https://open-meteo.com/en/docs/single-runs-api) | Frozen future weather inputs, raw forecast benchmark, separate 2026 calibration candidates | 22 historical weekly April–August 2026 runs plus the September 16 18Z final-input run. GFS covers the entire 14 days; selected final leads 10–345h. Gridded/downscaled, with hourly interpolation after native hourly resolution ends at lead 120. |
-| [NOAA station history/HOMR](https://www.ncei.noaa.gov/access/homr/) and GFS publication headers | Provenance and availability checks | Used for instrument/site context and sampled original-file publication checks. They do not supply extra temperature training rows. |
+| [Iowa Environmental Mesonet RDU routine METAR archive](https://mesonet.agron.iastate.edu/request/download.phtml?network=NC_ASOS) | All-month observations from January 1, 2011 through the exclusive cutoff; temperature, dew point, wind, pressure, rain, clouds and raw METAR | Direct airport target and recent-weather inputs. Archive QC is limited; screen against source evidence. |
+| [NOAA GHCN-hourly](https://www.ncei.noaa.gov/products/global-historical-climatology-network-hourly) | 2011–2025 exact-timestamp verification and quality/source codes | Cross-check of the same underlying airport measurements, not independent sensors. |
+| [NOAA 1991–2020 hourly normals](https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals) | Fixed calendar/hour benchmark and final lookups | Reference context, not thirty additional training years. Published in 2021; standard-time convention adjusted for EDT. |
+| [Open-Meteo single-run GFS archive](https://open-meteo.com/en/docs/single-runs-api) | 22 historical April–August 2026 runs and the September 16 18Z final run | Frozen pre-origin forecast guidance covering all 14 days. Gridded/downscaled; long-lead hourly values involve interpolation. |
+| NOAA station metadata and publication headers | Site/instrument context and sampled original GFS object dates | Provenance rather than extra target rows; serving-time verification limits remain explicit. |
+| IEM final-period observation snapshot | September 17 04:00 through October 1 04:00 UTC, evaluation only | Separate [raw CSV](reports/final/iem_rdu_final_actuals.csv) with METAR text and [request/checksum manifest](reports/final/final_observation_manifest.json). Never enters training. |
 
-**Why ignore other sources initially?** Daily products cannot supply hourly labels; reanalysis and NASA POWER are grid estimates rather than direct airport truth; Meteostat point series may interpolate or fill with models; LCD largely duplicates NOAA observations; nearby airports are different targets. HRRR/NAM/NBM/MOS and the ECMWF archive candidate have shorter horizons than the full 14 days. Adding them now would increase alignment, missingness and leakage risks without solving a clear unmet requirement. This is a documented review of practical authoritative candidates, not a claim to have exhaustively searched every weather dataset. [Full source comparison, acquisition details, station milestones and caveats](docs/DATA_DECISIONS.md).
+Daily products cannot meet an hourly target. Reanalysis and NASA POWER estimate grid values rather than direct airport truth. Meteostat may interpolate/fill; LCD largely duplicates NOAA; nearby airports are different targets. Shorter-horizon alternatives do not supply the entire fortnight without additional modeling. This was a practical source comparison, not a claim to have searched every possible dataset. [Full source decisions and acquisition details](docs/DATA_DECISIONS.md).
 
-## How far back, and which months?
+**Why download from 2011?** A ten-year practice forecast beginning in 2021 needs observations from 2011. Download coverage is wider than the final fit. Continuous all-month storage supports proper elapsed-time lags, calendar references and both history-length choices; it does not mean every model learns indiscriminately from winter and summer forecast starts.
 
-**Extract all months from 2011 onward; initially propose Aug–Oct from 2016 onward for the final station fit.** These are different decisions:
+**Selected histories:** station Ridge uses a rolling ten-year archive and simulated training starts in August–October. Its final history begins September 17, 2016 and ends at the 2026 cutoff; all-month history supplies the normal table and recent summaries. Boosting uses five years with two years of warm-up and seasonal simulated starts. GFS regression calibrates against earlier complete 2026 forecast windows, using the ten-year station reference. A training fortnight may extend beyond its starting month.
 
-- **2011 extraction start:** testing a ten-year history at the first 2021 forecast origin needs 2011–2020. Starting the download at 2016 would prevent that fair comparison. Continuous all-month storage also prevents incorrect lags formed by stitching separate seasonal blocks together.
-- **Initial final-fit candidate:** Aug–Oct 2016–2025 plus Aug 1–Sep 16, 2026. This brackets the target's autumn transition and offers more weather episodes than September alone. It contains **23,208 expected hours, 23,187 usable targets** after the provisional screen: 18 absent temperatures and 3 unresolved source discrepancies.
-- **Tradeoffs to test:** five versus ten complete prior years and September-only versus Aug–Oct versus all months. All months can help a season-aware model learn daily cycles but bring winter/summer regimes far from the target. Shorter history may represent recent conditions better but estimates rare events less reliably. **No option is proven best until matched September backtests.**
-- **Environmental context stays bounded:** regional warming motivates recency sensitivity; it does not identify 2016 as a climate break. Station metadata does not justify assuming a move at that year. Retain plausible weather extremes; quarantine supported source discrepancies separately. No arbitrary warming offset is applied.
+Five versus ten years and seasonal choices were tested on historical forecasts. Longer history gives a more stable reference; shorter history may better reflect recent conditions but has fewer weather episodes. Climate context motivated this comparison; it did not justify an invented 2016 climate break, automatic warming offset or deletion of real extremes. [Verified selection rationale and tradeoffs](docs/MODEL_AUDIT.md).
 
-## Preparation already completed
+## Preparation and exploratory analysis
 
-Original source files, request manifests, raw METAR text, station metadata and acquisition/preparation scripts are retained. The master grid has **137,711 expected UTC hourly slots**. Routine reports are selected consistently and duplicates/off-schedule reports are audited. Celsius/Fahrenheit, knots/metres per second, and inches/millimetres conversions are documented. Missing temperatures and source disagreements remain unavailable; none are interpolated. Exact NOAA matching retains quality/source codes and distinguishes rounding from disagreements. Calendar labels use Raleigh time; elapsed lags use UTC.
+1. Retain raw downloads, request manifests, METAR text and source metadata.
+2. Select routine reports consistently; preserve actual times and build a continuous UTC hourly grid.
+3. Convert units, check duplicate/off-schedule reports, and match NOAA reports at exact timestamps.
+4. Keep unavailable/disputed temperatures unavailable rather than interpolate them. Preserve rain traces, cloud reporting meaning and wind missingness; measured calm is zero, unknown wind direction is not north.
+5. Construct Raleigh calendar features and elapsed UTC lags without stitching separate seasonal blocks together.
+6. Explore only the original EDA scope and separate permitted 2026 context; fit/evaluate subsequent models under their own chronological boundaries.
 
-Covariates preserve reporting meaning: trace rain is distinct from zero, variable wind from north, and blank higher cloud layers from sensor failure. Wind components represent direction where measured speed/direction permit. Some parsed calm speeds are missing, so calm is only set to zero when actually measured. Source precision is retained; the parsed METAR T-group is an alternate target representation, never a same-hour predictor. [Data dictionary](docs/DATA_DICTIONARY.md), [preparation audit](docs/PREPARATION_QUALITY_REPORT.md).
+The training archive has **137,711 hourly slots**. Core EDA has **93,712 usable temperatures**, 175 unavailable/quarantined temperatures, a longest unavailable run of 12 hours and 37 archive disagreements. Daily/seasonal cycles, weather variability, recent departures, source precision and missingness motivate calendar references, recent-weather features and whole-fortnight evaluation. Same-hour descriptive correlations do not permit using future observed humidity, wind or temperature as inputs.
 
-## EDA completed and its scope
+The original EDA ends September 17, 2021; full-year comparisons use 2011–2020. The implemented development schedule starts August 27, 2021, so some early development windows overlap EDA. The 2024–2025 confirmation period remains outside it. Do not describe all development data as untouched. [Complete 24-figure EDA report](reports/eda/EDA_REPORT.md), [HTML report](reports/eda/EDA_REPORT.html), [executed notebook](notebooks/01_rdu_eda.ipynb), [numeric tables](reports/eda/tables), [dictionary](docs/DATA_DICTIONARY.md), [preparation audit](docs/PREPARATION_QUALITY_REPORT.md).
 
-The main model-design EDA stops **before September 17, 2021**, the earliest development origin. Complete-year comparisons use **2011–2020**, with **93,712 usable temperatures across 93,887 core hourly slots**. This preserves later September test weather for evaluation. Separate sections inspect permissible Aug 1–Sep 16, 2026 observations and pre-issued forecast inputs. GFS errors use April–July calibration runs only; July 30 and August confirmation runs are excluded. General preparation QC may flag reserved-period missingness/source disagreements, but EDA does not use their weather patterns to choose models.
+## What the three approaches learn
 
-**Results that matter for prediction:**
-
-- The exact historical target fortnight has **3,355 usable hours across ten Septembers**; these are ten annual weather windows, not thousands of independent events. Its median is **70°F**, with a middle 80% range of **59–81°F**.
-- Daily and seasonal cycles are strong, but individual fortnights have very different weather paths. Use calendar features and evaluate whole 14-day forecasts, not random hourly splits.
-- Five-/ten-year target hourly means differ by **1.99°F** on average. This supports a controlled history-length test, not an immediate recency winner.
-- Removing the training month/hour mean sharply reduces long-lag temperature correlation. A recent observed temperature can help near the origin, but actual future temperatures cannot become later-hour lag inputs.
-- Same-hour dew point/humidity/cloud relationships are descriptive. Their actual future observations are prohibited; use origin-known summaries or frozen forecast guidance. Predictive usefulness still requires validation.
-- The core has **175 unavailable/quarantined temperatures**, a longest unavailable run of **12 hours**, and **37 archive disagreements**. Median absolute IEM/NOAA difference across matched core reports is **0.04°F**; agreement is not independent-sensor validation.
-- All **336 final GFS temperature inputs and normal lookups** are present. In **17 calibration-only GFS origins**, interpolated to actual routine-report timestamps, pooled **MAE is 5.69°F**, **RMSE 7.69°F**, **bias -1.98°F**. Errors increase with lead. **These are exploratory spring/summer benchmark results, not September/final model performance.** The 5,700 scored pairs share only 3,016 distinct report times because weekly windows overlap.
-
-Every figure explains its question, data scope, actual finding, forecast implication and limitations in the **[complete EDA report](reports/eda/EDA_REPORT.md)**. For easier offline reading, open **[EDA_REPORT.html](reports/eda/EDA_REPORT.html)** beside its figures. The **[executed notebook](notebooks/01_rdu_eda.ipynb)**, [numeric tables](reports/eda/tables), PNG/SVG figures and [computed summary](reports/eda/summary.json) accompany the report.
-
-| Diagnostic | Question answered | Consequence for forecasting |
-|---|---|---|
-| 1 | [What patterns must a model represent?](reports/eda/EDA_REPORT.md) | Use calendar and hour features. Compare training seasons using matched September backtests. |
-| 2 | [Are there gaps that affect lags, fitting, or scoring?](reports/eda/EDA_REPORT.md) | Keep the hourly grid, retain quality flags, and score only available targets on a shared mask. |
-| 3 | [Why not choose all months purely because there are more rows?](reports/eda/EDA_REPORT.md) | Aug–Oct is the initial candidate because it brackets September. Retain all months to test whether season-aware modeling improves September errors. |
-| 4 | [How representative are neighboring months?](reports/eda/EDA_REPORT.md) | Neighboring months add examples of fronts and daily cycles, but month/day features must represent the autumn cooling. |
-| 5 | [Should hour and season interact?](reports/eda/EDA_REPORT.md) | Use cyclic hour/day-of-year features and consider hour-by-season interactions in linear regression. |
-| 6 | [How much variation does a calendar-only forecast miss?](reports/eda/EDA_REPORT.md) | Calendar averages are useful baselines; forecast weather inputs may explain departures. |
-| 7 | [Is September interchangeable with August and October?](reports/eda/EDA_REPORT.md) | Use continuous calendar features rather than assigning one September constant. |
-| 8 | [How variable is the exact target fortnight?](reports/eda/EDA_REPORT.md) | Validate whole 336-hour forecasts at historical origins; random hourly splitting would share weather events across train and test. |
-| 9 | [How should environmental change affect history selection?](reports/eda/EDA_REPORT.md) | Compare five- and ten-year histories on matched September folds. Do not select a start year as an assumed climate break or add an arbitrary warming correction. |
-| 10 | [Does using less history visibly change the baseline?](reports/eda/EDA_REPORT.md) | This motivates a backtest comparison; it does not establish which window forecasts better. |
-| 11 | [How far does recent-weather dependence persist?](reports/eda/EDA_REPORT.md) | At a fixed origin, future lags must be recursively predicted or replaced by origin-known summaries. Never feed observed target-window lags into later forecast hours. |
-| 12 | [Which variables relate to temperature, and can they be used?](reports/eda/EDA_REPORT.md) | Use observations only as origin-known summaries. Future weather features must come from frozen pre-origin forecasts; RH is also mathematically related to temperature and dew point. |
-| 13 | [What cleaning is needed before feature engineering?](reports/eda/EDA_REPORT.md) | Fit any imputation only on each training fold; retain trace-rain and variable-wind flags. Do not fill missing wind direction with north or empty cloud layers with an invented cloud amount. |
-| 14 | [Do same-hour relationships persist for a two-week forecast?](reports/eda/EDA_REPORT.md) | Test origin-known weather summaries; do not assume same-hour correlations imply 14-day usefulness. |
-| 15 | [Should clouds be treated as a simple ordered numeric feature?](reports/eda/EDA_REPORT.md) | If used, encode observed categories explicitly; future cloud features must be forecast values, with their own representation. |
-| 16 | [Do archive agreement and displayed precision justify treating all values as exact?](reports/eda/EDA_REPORT.md) | Keep raw values, quality codes, provenance and alternate precision. Resolve target definitions before any final scoring. |
-| 17 | [Should unusual weather be removed as an outlier?](reports/eda/EDA_REPORT.md) | Retain physically plausible extremes and events. Flag source errors separately from rare weather. |
-| 18 | [Can daily structure be separated without filling gaps?](reports/eda/EDA_REPORT.md) | This supports explicit daily-cycle features; it is a descriptive diagnostic, not a fitted forecast. |
-| 19 | [Does removing a daily cycle make hours independent?](reports/eda/EDA_REPORT.md) | Use time-respecting validation and weather-event/year-level uncertainty summaries. |
-| 20 | [What does the latest permissible station history look like?](reports/eda/EDA_REPORT.md) | Origin-known recent-weather summaries are candidates for later models. |
-| 21 | [Do the selected forecast and climatology sources cover every required hour?](reports/eda/EDA_REPORT.md) | This is a candidate forecast input/baseline, not the project prediction. Preserve issuance, lead time and interpolation flags. |
-| 22 | [Is raw forecast guidance equally accurate at every lead?](reports/eda/EDA_REPORT.md) | Consider lead-dependent calibration later, and compare candidates on the same origins and observation mask. This analysis fits no correction. |
-| 23 | [Can precipitation be reduced to a simple missing-equals-zero rule?](reports/eda/EDA_REPORT.md) | Retain trace and missing indicators; use rainfall as an origin-known summary or forecast input only after its reporting convention is explicit. |
-| 24 | [How consistent is the airport temperature target across the two archives?](reports/eda/EDA_REPORT.md) | Preserve source codes and match actual timestamps. Review disagreements instead of silently averaging archives or assuming displayed precision is accuracy. |
-
-## Availability and evaluation rules
-
-Use one fixed origin for all 336 forecasts. Calendar features are known ahead of time; target-window actual temperature, humidity, wind, pressure, rain and clouds are not. Frozen GFS values are eligible only from a run available before the origin. Historical station archives are revised snapshots, not proof of exact historical release-time data. Final sampled NOAA GFS files were published before the cutoff; original Open-Meteo serving times and every historical run's publication time were not individually verified. Avoid claims stronger than the retained evidence.
-
-**Development:** September 2021–2023. **Station confirmation:** September 2024–2025, only after locking choices. **GFS calibration:** April 2–July 23 initializations; **GFS confirmation:** August 6/13/20/27 initializations. Exclude July 30 because of label overlap with confirmation origins. Never compare different cohorts' errors as if they were matched tests.
-
-**Metrics:** primary MAE; secondary RMSE and signed bias in °F, with scored counts; per origin, each forecast day, days 1–3/4–7/8–14, and day/night. Every candidate shares the same valid-target mask. Two September 2024 targets have unresolved archive conflicts and two September 2025 targets are missing; document their treatment before scoring. MAPE on temperature and training R² are not measures of 14-day forecast quality. Fit imputation/scaling/feature selection only within each training fold. Report overlap and use origin/year-level summaries rather than assuming hourly independence.
-
-## Files and reproducibility
-
-All acquired weather/metadata files and the earlier preparation outputs are bundled in **three self-contained ZIP snapshots**, rather than omitted or replaced with external download links. They contain **97 files** including their checksum manifest. Original measurement files are unchanged; only a private local pathname in metadata was removed and the public-copy manifest refreshed. The extracted `data/pre_eda/` directory is ignored to avoid duplicating roughly 300MiB of uncompressed data in Git. This is storage packaging, not data exclusion. The [complete inventory](reports/FILE_INVENTORY.csv) lists every committed file and every bundled member. Runtime caches, installed third-party packages and Git internals are housekeeping files, not project deliverables; package versions are recorded. The original deck is subject to separate publication permission; requirements are included.
-
-| Location | Contents |
+| Candidate | Inputs and fitted relationship |
 |---|---|
-| `data/snapshots/` | Complete raw, prepared and records snapshots; original acquisition/preparation scripts inside records ZIP |
-| `docs/` | Source decisions, dictionary, quality report, requirements, next modeling steps and contracts |
-| `src/`, `scripts/`, `tests/` | EDA/data-access code, unpack/rebuild utilities, leakage/time-alignment tests |
-| `notebooks/` | Executed, explained EDA notebook |
-| `reports/eda/` | Markdown/HTML reports, 24 figures in PNG/SVG, numeric tables and computed summaries |
-| `reports/` | File inventory, checksums and completion audit |
-| `requirements.txt` | Exact versions of direct Python dependencies used |
+| **Station Ridge** | Historical typical temperature plus a learned departure from recent temperature, pressure, humidity, wind, clouds/rain. Ridge regularizes the weights; lead-time interactions let influence change with distance ahead. Ten-year history, Aug–Oct starts, alpha=10000. |
+| **Gradient boosting** | HistGradientBoostingRegressor, not XGBoost. Five-year history; an equal-weight average of two locked tree configurations predicts departures using calendar, lead and pre-origin weather. A 120-hour decay shrinks departures toward the historical reference. |
+| **GFS-corrected Ridge** | A separate regression using raw GFS departures, recent airport temperature conditions, hour and lead. Alpha=10; at least six completed earlier runs. It does not consume station Ridge's predictions. |
 
-From the repository root, use **Python 3.12 or later**:
+All output actual temperature in °F. GFS is an outside physics-based forecast input, not gradient boosting. Ridge's reference is fitted from the whole outer-training history; it is not separately reconstructed before each internal simulated start. Boosting uses pre-start references. Both exclude outer-test/final outcomes. GFS clock-hour temperatures are explicitly predictors of the :51 report; the raw-GFS baseline retains that time difference. [Full audit closure, reference policy and availability limits](docs/MODEL_AUDIT.md).
+
+## Historical evaluation and model selection
+
+Development has 21 forecasts: seven seasonal starts in each of 2021–2023. Locked station confirmation has 14 starts in 2024–2025. Each forecast starts at local midnight, predicts 336 labels, and uses only earlier history. Models receive future calendar/lead information, not actual target temperatures. Missing/quarantined targets are excluded on a shared comparison mask. Scores average per-origin errors; weekly windows overlap and are not independent samples.
+
+| Historical cohort | Station Ridge MAE | Boosting MAE | GFS-corrected Ridge MAE |
+|---|---:|---:|---:|
+| 2024–2025 station confirmation | 5.058°F | 5.470°F | No matching downloaded GFS archive |
+| Four August 2026 rolling forecasts | 4.55°F | Not evaluated in this cohort | 3.42°F |
+
+Do not compare columns across different cohorts as matched evidence. The August three-way comparison was not completed before final evaluation; it is not claimed as a selection result. GFS rolling training can use completed earlier August windows at later origins; it is not a permanently isolated August dataset. The original EDA's April–July-only, timestamp-interpolated raw-GFS diagnostic is a different analysis.
+
+Station Ridge's selected setting was not the strict development MAE minimum: 4.700°F versus 4.664°F for the best five-year alternative. The teammate reports preferring lower warm bias and a more stable ten-year reference, treating the small difference as a practical tie. Saved numbers support that tradeoff; overlapping-origin standard errors are not a formal equivalence test. On the two exact September 17 confirmation starts, station Ridge MAE is 5.262°F and boosting 5.946°F, versus 5.055°F for ten-year climatology. Retain this limitation alongside broader seasonal scores.
+
+The submitted choice was recorded before the final-validation commit. Final outcomes are used to measure accuracy, not to choose new settings or a hindsight hybrid. [Boosting development report](reports/models/boosting_development_report.md), [linear tuning table](reports/models/tuning_linear.csv), [linear confirmation predictions](reports/models/confirm_predictions_linear.csv), [GFS rolling scores](reports/models/gfs_2026_scores.csv).
+
+## Reproduce the final project
+
+Use **Python 3.12**. Commands below install the fully resolved dependency lock, restore verified data, rerun all tests, regenerate the unchanged forecasts, and score them using bundled actuals. Only package installation needs network access; final data and model inputs are saved locally.
 
 ```sh
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-lock.txt
 python scripts/unpack_data.py
 python -m unittest discover -s tests -v
-python scripts/run_eda.py
-python scripts/build_notebook.py
+python scripts/final_forecast.py
+python scripts/validate_final_forecast.py
+python scripts/build_documentation.py
+python scripts/audit_repository.py
 ```
 
-Unpacking verifies every bundled file checksum. EDA runs entirely from the saved snapshot, without downloading final outcomes or using live forecast values. Regenerate files before comparing checksums; visual formats can differ with fonts/plotting platforms. To rerun acquisition, see the original snapshot's `reproducibility/README.md`; preserved downloads are more stable than mutable endpoints. The saved history contains reserved historical outcomes for later evaluation; scope guards exclude them from the initial EDA. The executed notebook deliberately displays only permitted scopes.
+`requirements.txt` records direct dependencies; `requirements-lock.txt` records the resolved environment used for the clean run. The final scorer verifies the frozen forecast hash, exact local/UTC labels, all finite predictions and the observation snapshot hash. It needs no external `--actuals` path. An explicit alternative is supported, but never used as model input. `python scripts/download_final_actuals.py` verifies the saved input without network; `--refresh` intentionally re-downloads a mutable archive.
 
-## Next phase
+Optional reproductions:
 
-Confirm the hourly target/units and source-conflict policy, establish baselines, fit the required regularized linear regression and a gradient-boosted tree model, compare history/month choices on development folds, then run locked confirmation checks. Evaluate GFS corrections in their separate chronology. Finally refit with permitted history and produce/audit the 336 predictions. The **[detailed next-step plan](docs/NEXT_STEPS.md)** explains feature availability, fair comparisons, uncertainty and the student's remaining presentation/writeup. EDA conclusions guide these tests; they do not replace them.
+```sh
+python scripts/run_eda.py
+python scripts/build_notebook.py
+python scripts/confirm_linear.py
+python scripts/confirm_boosting.py
+python scripts/run_gfs.py
+```
+
+Historical development/tuning runners are retained under scripts. Do not use confirmation or final errors to tune again. Pixel bytes can depend on fonts/plotting platforms; compare numeric tables and predictions for scientific reproducibility. [Clean-run evidence](reports/REPRODUCIBILITY.json), [completion audit](reports/COMPLETION_AUDIT.json).
+
+## Structure and retained files
+
+| Location | Contents |
+|---|---|
+| `data/snapshots/` | Three immutable ZIPs containing all 97 original preparation members, including 96 checksummed files and their manifest |
+| `docs/` | Current requirements, contracts, source decisions, dictionary, model audit and frozen forecast record |
+| `src/` | Data loading, EDA, models, shared historical evaluation and separate final evaluation checks |
+| `scripts/` | Acquisition verification, unpacking, fixed-model prediction, historical/final evaluation and report/audit generation |
+| `tests/` | Time, leakage, forecast-integrity and evaluation contracts |
+| `notebooks/`, `reports/eda/` | Executed EDA, figures and numeric evidence |
+| `reports/models/` | Historical settings, selected evaluations and retained experiment evidence |
+| `reports/final/` | Forecasts, evaluation-only raw actuals/provenance, comparisons, errors and plot |
+| `reports/FILE_INVENTORY.csv`, `reports/SHA256SUMS.txt` | Current file inventory and checksums, including bundled members |
+
+The ignored extracted `data/pre_eda/` duplicates the saved ZIP content; it is not missing data. Environments, caches and Git internals are not deliverables. The preserved final observation download is a new retrieval that exactly matched the committed evaluation, not the teammate's unretained original file. Archived values can be revised. Historical GFS API serving times and every publication time were not individually verified; retained evidence and limits are explicit. The original PowerPoint is not republished; its requirements were rechecked and documented.
+
+The code/modeling work is complete once the clean-run audit passes. The student-authored presentation, writeup and course submission remain separate. [Current completion checklist](docs/NEXT_STEPS.md).

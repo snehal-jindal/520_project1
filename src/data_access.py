@@ -35,7 +35,7 @@ def load_observations(root: Path) -> pd.DataFrame:
     return df
 
 def training_eda_scope(df: pd.DataFrame) -> pd.DataFrame:
-    """Cut off before the earliest development origin, not just before 2026."""
+    """Retain the original EDA cutoff; early August 2021 development partly overlaps it."""
     core = df.loc[df.time.lt(EDA_ORIGIN)].copy()
     assert core.time.lt(EDA_ORIGIN).all()
     assert core.observed_at.dropna().lt(EDA_ORIGIN).all()

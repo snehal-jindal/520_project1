@@ -67,6 +67,11 @@ class EvaluationLeakage(unittest.TestCase):
                     ev.DEV_ORIGINS[:1])
         self.assertNotIn('temperature', seen[0].columns)
 
+    def test_invalid_model_output_is_rejected(self):
+        for output in (np.zeros(335), np.full(336, np.inf)):
+            with self.assertRaises(ValueError):
+                ev.evaluate(self.df, {'invalid': lambda hist, win: output}, ev.DEV_ORIGINS[:1])
+
     def test_window_is_336_hours_from_local_midnight(self):
         for origin in ev.DEV_ORIGINS + ev.CONFIRM_ORIGINS:
             win = ev.target_window(self.df, origin)
