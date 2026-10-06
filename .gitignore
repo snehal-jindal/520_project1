@@ -10,3 +10,6 @@ reports/eda/.mpl-cache/
 
 reports/eda/.ipython-cache/
 reports/eda/.jupyter-runtime/
+
+# Generated per-hour model predictions (recreated by scripts/run_*.py, several MB each)
+reports/models/*_predictions*.csv
