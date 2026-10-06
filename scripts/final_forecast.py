@@ -43,6 +43,10 @@ forecast['gradient_boosting_f'] = np.round(
     bm.predict_selected(boosting_hist, calendar), 1
 )
 forecast_columns = [*models, 'gradient_boosting_f']
+# The team's submitted forecast, chosen from development/confirmation evidence
+# before any September 2026 outcome was seen. The other columns are for comparison.
+SUBMITTED = 'gfs_ridge_f'
+forecast.insert(3, 'submitted_forecast_f', forecast[SUBMITTED])
 
 # Checks on the deliverable itself.
 assert len(forecast) == 336 and forecast.time_utc.is_unique
