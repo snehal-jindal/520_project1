@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "source_commit": "3f3dc0b19d8d69edef4065575a4534a8bece1be3",
+  "forecast_path": "reports/final/final_forecast_336h.csv",
+  "forecast_git_blob_sha": "1cd2f6594e0195de496925a8134a8fe02f5c961c",
+  "forecast_sha256": "b692b96d8a3662b7bb9122796e2f62176f2cb834567c9a0bcdd3b4d1492f6d42",
+  "selected_model_column": "gfs_ridge_f",
+  "submitted_column": "submitted_forecast_f",
+  "required_evaluation_columns": [
+    "station_ridge_f",
+    "gfs_ridge_f",
+    "gradient_boosting_f"
+  ],
+  "baseline_columns": [
+    "climatology_f",
+    "raw_gfs_f"
+  ],
+  "target": {
+    "station": "RDU",
+    "unit": "degF",
+    "convention": "Routine airport report assigned to its clock-hour label; usually minute :51, not an exact clock-hour reading.",
+    "origin_utc": "2026-09-17T04:00:00Z",
+    "last_hour_label_utc": "2026-10-01T03:00:00Z",
+    "timezone": "America/New_York",
+    "hours": 336
+  },
+  "evaluation": {
+    "primary_metric": "MAE",
+    "secondary_metrics": [
+      "RMSE",
+      "signed_bias"
+    ],
+    "shared_valid_target_mask": true,
+    "report_scored_count": true,
+    "lead_groups_days": [
+      [
+        1,
+        3
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        8,
+        14
+      ]
+    ],
+    "prediction_changes_after_final_truth_forbidden": true
+  },
+  "limits": [
+    "The selection commit states the decision preceded viewing final outcomes; independent observation of teammates' local workflow is unavailable.",
+    "Final observations are evaluation-only, stored outside the guarded pre-origin training snapshot."
+  ]
+}

@@ -7,6 +7,7 @@ import argparse
 import os
 from pathlib import Path
 import tempfile
+import sys
 import numpy as np
 import pandas as pd
 
@@ -17,6 +18,10 @@ import matplotlib.pyplot as plt
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.final_evaluation import ALL_COLUMNS, validate_forecast, join_actuals, verify_frozen_forecast
+from src.final_evaluation import metrics as checked_metrics
+from scripts.download_final_actuals import OUTPUT, verify_snapshot
 MODEL_COLUMNS = {
     'station_ridge_f': 'Station Ridge',
     'gfs_ridge_f': 'GFS-corrected Ridge',
@@ -25,50 +30,23 @@ MODEL_COLUMNS = {
 
 
 def metrics(actual, predicted):
-    error = predicted - actual
-    return {
-        'n': int(error.notna().sum()),
-        'MAE': float(error.abs().mean()),
-        'RMSE': float(np.sqrt((error ** 2).mean())),
-        'bias': float(error.mean()),
-    }
+    return checked_metrics(actual, predicted)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--actuals', type=Path, required=True,
-                        help='IEM routine-report CSV with station, valid and tmpf')
+    parser.add_argument('--actuals', type=Path, default=OUTPUT,
+                        help='Default: bundled evaluation-only IEM routine-report CSV.')
     args = parser.parse_args()
 
     forecast_path = ROOT / 'reports/final/final_forecast_336h.csv'
-    forecast = pd.read_csv(forecast_path)
-    forecast['time'] = pd.to_datetime(forecast.time_utc, utc=True)
-    if len(forecast) != 336 or not forecast.time.is_unique:
-        raise ValueError('Final forecast must contain 336 unique hours.')
+    verify_frozen_forecast(forecast_path, ROOT / 'docs/FORECAST_RECORD.json')
+    if args.actuals.resolve() == OUTPUT.resolve():
+        verify_snapshot()
+    forecast = validate_forecast(pd.read_csv(forecast_path))
 
     actual = pd.read_csv(args.actuals, dtype={'station': str, 'tmpf': str})
-    required = {'station', 'valid', 'tmpf'}
-    if not required.issubset(actual.columns) or not actual.station.eq('RDU').all():
-        raise ValueError('Expected an RDU IEM routine-report CSV.')
-    actual['observed_at_utc'] = pd.to_datetime(actual.valid, utc=True)
-    actual['time'] = actual.observed_at_utc.dt.floor('h')
-    actual['minutes_after_hour'] = actual.observed_at_utc.dt.minute
-    actual['actual_f'] = pd.to_numeric(actual.tmpf.replace({'M': None, '': None}))
-    actual['distance_from_routine_minute'] = (
-        actual.minutes_after_hour - 51
-    ).abs()
-    actual = actual.sort_values(
-        ['time', 'distance_from_routine_minute', 'observed_at_utc'],
-        kind='stable',
-    ).drop_duplicates('time')
-
-    joined = forecast.merge(
-        actual[['time', 'observed_at_utc', 'minutes_after_hour', 'actual_f']],
-        on='time', how='left', validate='one_to_one',
-    )
-    if joined.actual_f.isna().any():
-        missing = joined.loc[joined.actual_f.isna(), 'time_utc'].tolist()
-        raise ValueError(f'Missing final observations: {missing}')
+    joined = join_actuals(forecast, actual)
 
     day = (joined.lead_hours - 1) // 24 + 1
     horizon_groups = {
@@ -78,7 +56,7 @@ def main():
         'days 8-14': day.ge(8),
     }
     score_rows = []
-    for column, label in MODEL_COLUMNS.items():
+    for column, label in ALL_COLUMNS.items():
         joined[f'{column}_error'] = joined[column] - joined.actual_f
         for horizon, mask in horizon_groups.items():
             score_rows.append({
@@ -93,6 +71,16 @@ def main():
     )
     scores = pd.DataFrame(score_rows)
     scores.to_csv(output / 'final_validation_scores.csv', index=False)
+    daily_rows, light_rows = [], []
+    daylight = pd.to_datetime(joined.time_local).dt.hour.between(6, 17)
+    for column, label in ALL_COLUMNS.items():
+        for d in range(1, 15):
+            mask = day.eq(d)
+            daily_rows.append({'model': label, 'forecast_day': d, **metrics(joined.actual_f[mask], joined[column][mask])})
+        for period, mask in [('day_06_to_17_local', daylight), ('night_other_hours', ~daylight)]:
+            light_rows.append({'model': label, 'period': period, **metrics(joined.actual_f[mask], joined[column][mask])})
+    pd.DataFrame(daily_rows).to_csv(output / 'final_validation_by_day.csv', index=False)
+    pd.DataFrame(light_rows).to_csv(output / 'final_validation_day_night.csv', index=False)
 
     time_local = pd.to_datetime(joined.time_local)
     fig, ax = plt.subplots(figsize=(14, 5))

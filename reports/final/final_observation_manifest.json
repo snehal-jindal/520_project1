@@ -1,0 +1,65 @@
+{
+  "source": "Iowa Environmental Mesonet NC ASOS archive",
+  "request_url": "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=RDU&network=NC_ASOS&sts=2026-09-17T04%3A00%3A00%2B00%3A00&ets=2026-10-01T04%3A00%3A00%2B00%3A00&tz=UTC&format=onlycomma&missing=M&trace=T&direct=yes&report_type=3&data=tmpf&data=metar",
+  "request_parameters": [
+    [
+      "station",
+      "RDU"
+    ],
+    [
+      "network",
+      "NC_ASOS"
+    ],
+    [
+      "sts",
+      "2026-09-17T04:00:00+00:00"
+    ],
+    [
+      "ets",
+      "2026-10-01T04:00:00+00:00"
+    ],
+    [
+      "tz",
+      "UTC"
+    ],
+    [
+      "format",
+      "onlycomma"
+    ],
+    [
+      "missing",
+      "M"
+    ],
+    [
+      "trace",
+      "T"
+    ],
+    [
+      "direct",
+      "yes"
+    ],
+    [
+      "report_type",
+      "3"
+    ],
+    [
+      "data",
+      "tmpf"
+    ],
+    [
+      "data",
+      "metar"
+    ]
+  ],
+  "retrieved_at_utc": "2026-10-06T22:28:29.392576+00:00",
+  "content_type": "application/octet-stream",
+  "bytes": 37363,
+  "sha256": "ab7e7d0f4ad0178e05bbe2ae4e0b83b418a0ac1ef552e7655410e05e09b3a8ac",
+  "output_file": "reports/final/iem_rdu_final_actuals.csv",
+  "temperature_unit": "degF",
+  "report_type": "3 (routine METAR)",
+  "purpose": "Final evaluation only; never loaded by src/data_access.py or model fitting.",
+  "request_end_exclusive_utc": "2026-10-01T04:00:00Z",
+  "selection": "Closest routine report to minute 51 within each UTC hour; earlier report breaks ties.",
+  "provenance_limit": "This is a new preserved retrieval verified against the committed evaluation, not the teammate's unretained original download. Archive observations may be revised."
+}

@@ -21,6 +21,12 @@ def build():
     nb=nbformat.v4.new_notebook(cells=cells,metadata={'kernelspec':{'name':'python3','display_name':'Python 3','language':'python'}})
     client=NotebookClient(nb,timeout=180,kernel_name='python3',resources={'metadata':{'path':str(root/'notebooks')}})
     client.execute()
+    # The first code cell regenerates the report. Refresh Markdown from that
+    # result so an old saved report cannot leave stale status text in the notebook.
+    report=(root/'reports/eda/EDA_REPORT.md').read_text()
+    report=report.replace('](figures/','](../reports/eda/figures/').replace('](../../docs/','](../docs/')
+    for i,chunk in enumerate(report.split('\n### ')):
+        nb.cells[i+2].source=chunk if chunk.startswith('#') else '### '+chunk
     nbformat.write(nb,root/'notebooks/01_rdu_eda.ipynb')
     print(f'Executed notebook: {len(cells)} cells; no error outputs.')
 if __name__=='__main__':build()

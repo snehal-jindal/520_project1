@@ -25,6 +25,7 @@ models = {'climatology': ev.climatology,
           'raw GFS': gm.raw_gfs(gfs),
           'GFS ridge': gm.gfs_ridge(gfs)}
 scores, preds = ev.evaluate(df, models, test_origins, years=lm.LOCKED['years'])
+scores.to_csv(root/'reports/models/gfs_2026_scores.csv', index=False)
 ev.save_predictions(preds, root/'reports/models/gfs_2026_predictions.csv')
 
 pd.set_option('display.width', 160, 'display.precision', 2)

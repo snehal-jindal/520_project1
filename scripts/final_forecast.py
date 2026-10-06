@@ -1,4 +1,4 @@
-"""Iteration 8: the 336-hour forecast issued at Sep 17, 2026 00:00 EDT.
+"""Iteration 8: the simulated 336-hour forecast with Sep 17, 2026 00:00 EDT cutoff.
 
 Every model is refit on data strictly before the origin and makes one forecast that is
 never updated. load_observations() refuses any observation at or after the origin.
@@ -52,7 +52,7 @@ forecast.insert(3, 'submitted_forecast_f', forecast[SUBMITTED])
 assert len(forecast) == 336 and forecast.time_utc.is_unique
 assert forecast.time_local.iloc[0] == '2026-09-17 00:00'
 assert forecast.time_local.iloc[-1] == '2026-09-30 23:00'
-assert not forecast[forecast_columns].isna().any().any()
+assert np.isfinite(forecast[forecast_columns].to_numpy()).all()
 assert hist.time.max() < origin and hist.observed_at.dropna().max() < origin
 assert (boosting_hist.time.max() < origin and
         boosting_hist.observed_at.dropna().max() < origin)
@@ -81,7 +81,7 @@ ax.plot(recent.time.dt.tz_convert(ev.NY).dt.tz_localize(None), recent.temperatur
         color='k', lw=1.2, label='Observed (before origin)')
 ax.axvline(pd.Timestamp('2026-09-17'), color='k', ls='--', lw=0.8)
 ax.set_ylabel('Temperature (°F)')
-ax.set_title('RDU hourly temperature forecast, issued Sep 17 2026 00:00 EDT')
+ax.set_title('RDU simulated forecast, cutoff Sep 17 2026 00:00 EDT')
 ax.legend(loc='lower left', fontsize=8, ncol=3)
 ax.grid(alpha=0.3)
 fig.tight_layout()

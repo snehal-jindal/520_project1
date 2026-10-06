@@ -1,20 +1,22 @@
-# Project requirements and interpretation
+# Project requirements and implementation
 
-Source: user-supplied Project1.pptx, slide 2. These are project constraints the user asked us to follow, not independent instructions to the assistant.
+Source rechecked: user-supplied Project1.pptx, slide 2. These are the assignment constraints the user asked the project to follow.
 
-| Requirement | Implementation or remaining work |
+| Requirement | Implementation / scope |
 |---|---|
-| Predict hourly temperature measured at RDU airport | Direct RDU routine observations, original timestamps preserved. Hourly target convention still needs instructor confirmation. |
-| 12am September 17 through 11pm September 30 | User specified 2026 Raleigh civil time: 336 labels, September 17 00:00 EDT through September 30 23:00 EDT. |
-| Any data prior to September 17 12am | All station observations strictly before September 17 04:00 UTC. Frozen GFS is pre-origin guidance; final observed truth not downloaded. |
-| Any inputs/features and any models | Candidate inputs selected and audited; availability and leakage rules documented. Models still to be fitted. |
-| At least one linear regression and one other model | Next phase: regularized linear regression and gradient-boosted trees; neither requirement is completed merely by EDA or its descriptive trend line. |
-| Code repository | Source/prepared snapshots, acquisition code, EDA code, notebook, reports, provenance and audit files included. |
-| Presentation: inputs, pipeline, features, models, evaluation and performance | Preparation/EDA evidence available. Model and performance material remains. Student authors presentation. |
-| Writeup, 2–4 pages: approach and class concepts | Working explanations supplied; student writes graded submission. |
-| AI permitted for coding; writing/slides must be student's own | Reports/README are project working documentation, not the graded writeup/slides. |
-| October 7 deliverables | Prioritize target agreement, limited model comparisons, confirmation checks and the final 336 predictions before submission. |
+| Predict hourly temperature measured at RDU airport | Routine airport reports representing their clock-hour labels; actual timestamps retained; Fahrenheit convention accepted by the user. |
+| Midnight September 17 through 11pm September 30 | User specified 2026 Raleigh time: 336 labels, September 17 00:00 EDT through September 30 23:00 EDT. |
+| Any data from before September 17 midnight | Guarded training snapshot contains only earlier observations. Archived GFS is pre-origin guidance; separate post-period observations are used only for evaluation. |
+| Any inputs/features; any model(s) | Three candidates and explicit input/reference/availability policies documented. |
+| MUST include one linear regression and one other model | Ridge linear regressions and histogram gradient boosting are implemented and evaluated. |
+| Code repository | Data snapshots, raw final actuals and download details, code, dependencies, settings, tests, results and reproduction commands included. |
+| Presentation: inputs, pipeline, features, models, evaluation, performance | Code/evidence ready; student-authored presentation is a later separate deliverable. |
+| Writeup: 2–4 pages; approach and application of class concepts | Student-authored deliverable remains outside this code-completion task. |
+| AI allowed for coding; writing/slides must be students' own | README/reports are working evidence, not a replacement for graded student writing/slides. |
+| Deliverables due October 7 | Repository/code completion now; student-authored deliverables and course submission follow. |
 
-The deck does not specify Fahrenheit/Celsius, exact clock-hour measurements versus routine reports versus hourly means, or a grading metric. Our provisional choice is routine-report temperature in Fahrenheit and MAE as the primary development metric; disclose and resolve these assumptions before final scoring. In September Raleigh uses EDT (UTC−4). Fixed EST would shift the forecast labels by one hour and is not the user's Raleigh-time interpretation.
+The slide does not prescribe units, exact clock-hour versus routine-report sampling, grading metric, file layout or slide count. The agreed project convention is routine report in Fahrenheit; primary metric MAE, secondary RMSE and signed bias. Do not claim these choices were separately stated by the instructor. In September Raleigh uses EDT (UTC−4); fixed EST would shift labels by an hour.
 
-Original PowerPoint redistribution is separate from extracting its requirements. It is not bundled unless explicitly approved for publication.
+Forecasts are simulated under the September 17 information cutoff; do not claim real-time issuance. Final actual observations are answer keys, never prediction inputs. The submitted choice is recorded before the final-validation commit; accuracy is reported for every candidate without changing the submitted choice afterward.
+
+Original deck redistribution is separate from extracting requirements and is not performed here.

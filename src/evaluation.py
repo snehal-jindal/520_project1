@@ -96,6 +96,9 @@ def evaluate(df: pd.DataFrame, models: dict, origin_list, years: int = 10):
         # Models see only the calendar of the target hours, never the actual temperatures.
         calendar = win.drop(columns='temperature')
         p = {name: np.asarray(f(hist, calendar), dtype=float) for name, f in models.items()}
+        for name, values in p.items():
+            if values.shape != (HORIZON,) or np.isinf(values).any():
+                raise ValueError(f'{name} must return exactly 336 predictions without infinite values.')
         mask = win.temperature.notna().to_numpy()
         for v in p.values():
             mask &= ~np.isnan(v)

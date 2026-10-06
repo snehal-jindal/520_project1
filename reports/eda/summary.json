@@ -44,10 +44,11 @@
   },
   "scope_guards": {
     "final_outcomes_accessed": false,
-    "2021_2025_test_outcomes_in_core_eda": false,
+    "september17_2021_onward_outcomes_in_core_eda": false,
+    "early_2021_development_overlap": true,
     "august_gfs_confirmation_errors_examined": false,
     "imputation_used": false,
-    "final_models_fitted": false,
+    "models_fitted_by_eda": false,
     "figures": 24
   }
 }
